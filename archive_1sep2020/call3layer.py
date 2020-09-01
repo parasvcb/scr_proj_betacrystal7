@@ -130,8 +130,7 @@ if not os.path.isfile(os.path.join(processingdir, "dimensions.tsv")):
 dispint = 0.1
 # displacement interval over which displacemnet wise averaging of property X will be computed
 distC, forceC = mdpro.forcedistance(dirsim)
-forceC, force_ra20, forcedispav = mdpro.compute_averages(
-    forceC, distC, dispint)
+forcedispav = mdpro.dispAvg(distC, forceC, dispint)
 # print(forcedispav)
 keystemp = list(forcedispav.keys())
 keystemp.sort()
@@ -156,7 +155,6 @@ with open(os.path.join(processingdir, "peaks_distances.tsv"), "w") as fin:
 peakhas = {peak1[0]: peak1[1], peak2[0]: peak2[1]}
 downhas = {down1[0]: down1[1], down2[0]: down2[1]}
 # so here we stored, displacement peak values as keys and force as their values
-
 if not os.path.isfile(os.path.join(processingdir, "toughness.tsv")):
     volume = mdcom.nanocrystal_volume(waterpsf, waterpdb)
     toughness_data_all, toughness_data_1stpeak, toughness_data_2aa = mdpro.toughness(
@@ -170,21 +168,27 @@ if not os.path.isfile(os.path.join(processingdir, "toughness.tsv")):
 framestravelled = mdpro.framestravelled(distC, dispint=0.5)
 
 print(4)
+# ->forcepeaks are pending and corresponding calls
 
+forceC, force_ra20, force_ra250 = mdpro.compute_averages(
+    forceC, distC)
+
+velocityC, velocity_ra20, velocity_ra250 = mdpro.compute_averages(
+    velocityC, distC)
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
 if not mdcom.checkFiles(['hbonds_C_protein.dat', 'hbonds_C_BD.dat', 'hbonds_C_protein_bbbb.dat',
                          'hbonds_C_BD_bbbb.dat', 'hbonds_C_protein_scsc.dat', 'hbonds_C_BD_scsc.dat',
                          'hbonds_C_protein_scbb.dat', 'hbonds_C_BD_scbb.dat'], directory=processingdir):
-    mdcom.hbonds_calculator3layer(
-        psf=psf, dcd=dcdpull, outfile=processingdir)
-
+    mdcom.hbonds_calculator3layer(psf=psf, dcd=dcdpull, outfile=processingdir)
+if not mdcom.checkFiles(['angle_resid4', 'angle_resid2'], directory=processingdir):
+    print("yes")
+    mdcom.angle_cal(psf, dcdpull, processingdir)
 if not mdcom.checkFiles(['com_gcm_pull.log'], directory=processingdir):
     mdcom.com_calc(psf, dcdpull, centerofmasstclscript, processingdir)
 
-hbondData = mdpro.hbonds_calculator3layer(
-    processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint)
+hbondData = mdpro.hbonds_calculator3layer(processingdir, distC)
 hb_all_raw, hb_all_ra20, hb_all_ra250 = hbondData['all']
 hb_adjacent_raw, hb_adjacent_ra20, hb_adjacent_ra250 = hbondData['adjacent']
 hb_allbbbb_raw, hb_allbbbb_ra20, hb_allbbbb_ra250 = hbondData['allbbbb']
@@ -220,10 +224,10 @@ hb_adjacentscsc_dispav = mdpro.dispAvg(
     distC, hb_adjacentscsc_raw, dispint)
 hb_adjacentscbb_dispav = mdpro.dispAvg(
     distC, hb_adjacentscbb_raw, dispint)
-
 pse6_dispav = mdpro.dispAvg(distC, pse6, dispint)
 pse4_dispav = mdpro.dispAvg(distC, pse4, dispint)
 com1_dispav = mdpro.dispAvg(distC, com1st, dispint)
+vel_dispav = mdpro.dispAvg(distC, velocityC, dispint)
 # print(com1_dispav)
 print("done1")
 com2_dispav = mdpro.dispAvg(distC, com2nd, dispint)

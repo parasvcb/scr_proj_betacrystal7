@@ -47,7 +47,7 @@ has_testing = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], '
                            'polyglycine': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 10)]},
                            'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 12)]},
                            'polyisoleucine': {'up': [(2, 8), (10, 14)], 'down': [(8, 10), (12, 14)]}}
-               }
+               }  
 # up will have bins here, from whree to whree and same for down
 # calculations for only first two peaks
 
@@ -65,7 +65,7 @@ for i in os.listdir(dirsim):
         destination = os.path.join(processingdir, i)
         mdpro.movefile(source, destination)
         print("moved", source)
-# general cleanup of main sim dir
+#general cleanup of main sim dir
 
 print(1)
 centerofmasstclscript = "/home/paras/bin/centerofmassgeom.tcl"
@@ -75,7 +75,7 @@ waterpdb = os.path.join(dirsim, 'before_mini', "ionized.pdb")
 waterminipdb = os.path.join(dirsim, 'before_mini', "coordmini.pdb")
 
 minimizedpdb = os.path.join(processingdir, "minimized_protein.pdb")
-rawpdb = os.path.join(processingdir, "raw_protein.pdb")
+rawpdb= os.path.join(processingdir, "raw_protein.pdb")
 waterdcdpull = os.path.join(dirsim, "dcd_outputs", "pull", "force_pull.dcd")
 waterdcdprod = os.path.join(dirsim, "dcd_outputs", "press_concatenate.dcd")
 psf = os.path.join(processingdir, "wowater.psf")
@@ -92,15 +92,13 @@ if not os.path.isfile(dcdprod):
         dcdprod = False
 
 if not os.path.isfile(rawpdb) or not os.path.isfile(minimizedpdb):
-    mdcom.removewaterfrompdb(
-        waterpsf, waterpdb, os.path.join(processingdir, "raw_protein"))
-    mdcom.removewaterfrompdb(waterpsf, waterminipdb, os.path.join(
-        processingdir, "minimized_protein"))
+    mdcom.removewaterfrompdb(waterpsf,waterpdb, os.path.join(processingdir,"raw_protein"))
+    mdcom.removewaterfrompdb(waterpsf,waterminipdb, os.path.join(processingdir,"minimized_protein"))
 
-if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
+if not (os.path.isfile(os.path.join(processingdir,"rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir,"rmsd_frompdb.txt"))):
     mdcom.rmsd(dcdprod, minimizedpdb, processingdir)
-# sys.exit()
-# usually placed for fast group calculations
+#sys.exit()
+#usually placed for fast group calculations
 
 if not os.path.isfile(psf):
     psfsource = os.path.join(dirsim, 'before_mini/no_clash_z_autopsf.psf')
@@ -128,10 +126,9 @@ if not os.path.isfile(os.path.join(processingdir, "dimensions.tsv")):
               index=False, sep='\t')
 
 dispint = 0.1
-# displacement interval over which displacemnet wise averaging of property X will be computed
+#displacement interval over which displacemnet wise averaging of property X will be computed
 distC, forceC = mdpro.forcedistance(dirsim)
-forceC, force_ra20, forcedispav = mdpro.compute_averages(
-    forceC, distC, dispint)
+forcedispav = mdpro.dispAvg(distC, forceC, dispint)
 # print(forcedispav)
 keystemp = list(forcedispav.keys())
 keystemp.sort()
@@ -144,8 +141,26 @@ peak2 = mdcom.peakdistances(
     newarrtemp, has_testing[reptype][poltype]['up'][1], "max")
 down2 = mdcom.peakdistances(
     newarrtemp, has_testing[reptype][poltype]['down'][1], "min")
-# above four values have 2 values packed, displacemnet and force
+#above four values have 2 values packed, displacemnet and force
+peakhas = {peak1[0]: peak1[1], peak2[0]: peak2[1]}
+downhas = {down1[0]: down1[1], down2[0]: down2[1]}
+#so here we stored, displacement peak values as keys and force as their values
+if not os.path.isfile(os.path.join(processingdir, "toughness.tsv")):
+    volume = mdcom.nanocrystal_volume (waterpsf, waterpdb)
+    toughness_data_all, toughness_data_1stpeak, toughness_data_2aa = mdpro.toughness(
+        forcedispav, down1[0],volume)
+    with open(os.path.join(processingdir, "toughness.tsv"), 'w') as fout:
+        fout.write("Peaktype\tArea\n")
+        fout.write("Complete\t%s\n" % (toughness_data_all))
+        fout.write("1stpeak\t%s\n" % (toughness_data_1stpeak))
+        fout.write("2aadist\t%s\n" % (toughness_data_2aa))
 
+velocityC = mdpro.velocity(distC)
+velocitydispav = mdpro.dispAvg(distC, velocityC, dispint)
+
+framestravelled = mdpro.framestravelled(distC, dispint=0.5)
+
+print(down1)
 with open(os.path.join(processingdir, "peaks_distances.tsv"), "w") as fin:
     fin.write("peaktype\tdistance\tforce\tpoltype\treptype\n")
     fin.write("peak1\t%s\t%s\n" % (peak1[0], peak1[1]))
@@ -153,38 +168,28 @@ with open(os.path.join(processingdir, "peaks_distances.tsv"), "w") as fin:
     fin.write("peak2\t%s\t%s\n" % (peak2[0], peak2[1]))
     fin.write("down2\t%s\t%s\n" % (down2[0], down2[1]))
 
-peakhas = {peak1[0]: peak1[1], peak2[0]: peak2[1]}
-downhas = {down1[0]: down1[1], down2[0]: down2[1]}
-# so here we stored, displacement peak values as keys and force as their values
-
-if not os.path.isfile(os.path.join(processingdir, "toughness.tsv")):
-    volume = mdcom.nanocrystal_volume(waterpsf, waterpdb)
-    toughness_data_all, toughness_data_1stpeak, toughness_data_2aa = mdpro.toughness(
-        forcedispav, down1[0], volume)
-    with open(os.path.join(processingdir, "toughness.tsv"), 'w') as fout:
-        fout.write("Peaktype\tArea\n")
-        fout.write("Complete\t%s\n" % (toughness_data_all))
-        fout.write("1stpeak\t%s\n" % (toughness_data_1stpeak))
-        fout.write("2aadist\t%s\n" % (toughness_data_2aa))
-
-framestravelled = mdpro.framestravelled(distC, dispint=0.5)
-
 print(4)
+# ->forcepeaks are pending and corresponding calls
 
+forceC, force_ra20, force_ra250 = mdpro.compute_averages(
+    forceC, distC)
+
+velocityC, velocity_ra20, velocity_ra250 = mdpro.compute_averages(
+    velocityC, distC)
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
 if not mdcom.checkFiles(['hbonds_C_protein.dat', 'hbonds_C_BD.dat', 'hbonds_C_protein_bbbb.dat',
                          'hbonds_C_BD_bbbb.dat', 'hbonds_C_protein_scsc.dat', 'hbonds_C_BD_scsc.dat',
                          'hbonds_C_protein_scbb.dat', 'hbonds_C_BD_scbb.dat'], directory=processingdir):
-    mdcom.hbonds_calculator3layer(
-        psf=psf, dcd=dcdpull, outfile=processingdir)
-
+    mdcom.hbonds_calculator3layer(psf=psf, dcd=dcdpull, outfile=processingdir)
+if not mdcom.checkFiles(['angle_resid4', 'angle_resid2'], directory=processingdir):
+    print("yes")
+    mdcom.angle_cal(psf, dcdpull, processingdir)
 if not mdcom.checkFiles(['com_gcm_pull.log'], directory=processingdir):
     mdcom.com_calc(psf, dcdpull, centerofmasstclscript, processingdir)
 
-hbondData = mdpro.hbonds_calculator3layer(
-    processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint)
+hbondData = mdpro.hbonds_calculator3layer(processingdir, distC)
 hb_all_raw, hb_all_ra20, hb_all_ra250 = hbondData['all']
 hb_adjacent_raw, hb_adjacent_ra20, hb_adjacent_ra250 = hbondData['adjacent']
 hb_allbbbb_raw, hb_allbbbb_ra20, hb_allbbbb_ra250 = hbondData['allbbbb']
@@ -220,10 +225,10 @@ hb_adjacentscsc_dispav = mdpro.dispAvg(
     distC, hb_adjacentscsc_raw, dispint)
 hb_adjacentscbb_dispav = mdpro.dispAvg(
     distC, hb_adjacentscbb_raw, dispint)
-
 pse6_dispav = mdpro.dispAvg(distC, pse6, dispint)
 pse4_dispav = mdpro.dispAvg(distC, pse4, dispint)
 com1_dispav = mdpro.dispAvg(distC, com1st, dispint)
+vel_dispav = mdpro.dispAvg(distC, velocityC, dispint)
 # print(com1_dispav)
 print("done1")
 com2_dispav = mdpro.dispAvg(distC, com2nd, dispint)

@@ -76,29 +76,7 @@ def toughness(has, toughnessDistance, crysvol):
     return (return_jm3(areall, crysvol), return_jm3(area1stpeak, crysvol), return_jm3(area2aagen, crysvol))
 
 
-def dispAvg(distC, varible, dispint=1):
-    distval = list(distC.values())
-    distval.sort()
-    bins = np.arange(-4, int(distval[-1])+6, dispint)
-    binshas = {(bins[i], bins[i+1]): [] for i in range(0, len(bins)-1)}
-    for i in varible:
-        if i in distC:
-            dispval = distC[i]
-            for j in binshas:
-                if dispval >= j[0] and dispval < j[1]:
-                    binshas[j] += [varible[i]]
-                    break
-        else:
-            # print(i)
-            pass
-    # remove the unfilled keys
-    binshas = {i: np.mean(binshas[i]) for i in binshas if binshas[i]}
-    hastemp = {round(i[0], 3): round(binshas[i], 3) for i in binshas}
-
-    return hastemp
-
-
-def compute_averages(raw, dis, dispint, flag=True):
+def compute_averages(raw, dis, flag=True):
     # flag is for distance wise averaging, else for production runs
     tdis = list(dis.keys())
     traw = list(raw.keys())
@@ -118,11 +96,13 @@ def compute_averages(raw, dis, dispint, flag=True):
         # got the properties as per sorted list
 
         lisra20 = running_mean_refiner(listempn, 20, 1)
+        lisra250 = running_mean_refiner(listempn, 250, 1)
         # property is averaged, here for instance force after sorting accoridng to distnace
         avgframe_ra20 = {lis[i][2]: lisra20[i] for i in range(0, len(lisra20))}
+        avgframe_ra250 = {lis[i][2]: lisra250[i]
+                          for i in range(0, len(lisra250))}
         # then they are arranged as per frames
-        dispavg = dispAvg(dis, raw, dispint)
-        return raw, avgframe_ra20
+        return raw, avgframe_ra20, avgframe_ra250
     else:
         # production run
         lis = [[i, raw[i]] for i in raw]
@@ -131,10 +111,26 @@ def compute_averages(raw, dis, dispint, flag=True):
         listempn = [i[1] for i in lis]
         # got the properties as per sorted list
         lisra20 = running_mean_refiner(listempn, 20, 1)
+        lisra250 = running_mean_refiner(listempn, 250, 1)
         # property is averaged, here for instance force after sorting accoridng to distnace
         avgframe_ra20 = {lis[i][0]: lisra20[i] for i in range(0, len(lisra20))}
+        avgframe_ra250 = {lis[i][0]: lisra250[i]
+                          for i in range(0, len(lisra250))}
         # then they are arranged as per frames
-        return raw, avgframe_ra20
+        return raw, avgframe_ra20, avgframe_ra250
+
+
+def velocity(distC):
+    tkeys = list(distC.keys())
+    tkeys.sort()
+    distance = [distC[i] for i in tkeys]
+    TIME = 1
+    velocity_has = {}
+    velocity_has[0] = 0
+    for i, val in enumerate(distance[1:]):
+        disp = distance[i+1]-distance[i+1-1]
+        velocity_has[i+1] = disp/1000  # converting in units of ang/ps
+    return velocity_has
 
 
 def framestravelled(distC, dispint):
@@ -159,6 +155,28 @@ def framestravelled(distC, dispint):
                 distframes[i] = binshas[j]
                 break
     return distframes
+
+
+def dispAvg(distC, varible, dispint=1):
+    distval = list(distC.values())
+    distval.sort()
+    bins = np.arange(-4, int(distval[-1])+6, dispint)
+    binshas = {(bins[i], bins[i+1]): [] for i in range(0, len(bins)-1)}
+    for i in varible:
+        if i in distC:
+            dispval = distC[i]
+            for j in binshas:
+                if dispval >= j[0] and dispval < j[1]:
+                    binshas[j] += [varible[i]]
+                    break
+        else:
+            # print(i)
+            pass
+    # remove the unfilled keys
+    binshas = {i: np.mean(binshas[i]) for i in binshas if binshas[i]}
+    hastemp = {round(i[0], 3): round(binshas[i], 3) for i in binshas}
+
+    return hastemp
 
 
 def forcedistance(dirsim):
@@ -206,7 +224,7 @@ def parseEnergyFiles(filename):
     return hasElec, hasVdw, hasTotal, hasElecForce, hasVdwForce, hasTotalForce
 
 
-def hbondaverages(filename, dis, dispint):
+def hbondaverages(filename, dis):
     # this will feed in the H bond data from file to hash
     # print(filename)
     with open(filename) as fin:
@@ -218,31 +236,6 @@ def hbondaverages(filename, dis, dispint):
                 bt = float(ele[1])
                 lis += [(at, bt)]
         raw = {i[0]: i[1] for i in lis[:8000]}
-    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
-    return raw, avgframe_ra20, avgframe_ra250
-
-
-def hbondaverages_new(directory, dis, dispint, framerange=False):
-    # this will feed in the H bond data from frame file to hash
-    frames = framerange[1]-framerange[0]+1 if framerange else False
-    filerange = os.listdir(directory) if not framerange \
-        else [i for i in os.listdir(directory) if framerange[0] <= int(i.split('.')[0]) <= framerange[1]]
-    # SegCP1-ASN2-Main-N 	 SegBP1-ASN7-Side-OT1 	 100.00%
-    hbhas = {}
-    for fil in filerange:
-        with open(os.path.join(directory, fil)) as fin:
-            mcmc = 0
-            mcsc = 0
-            scsc = 0
-            for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
-                acc, don, occ = line.split()
-                typebond = [acc.split('-')[2], don.split('-')[2]]
-                classify = ''
-                ele = i.split()
-                at = int(ele[0])
-                bt = float(ele[1])
-                lis += [(at, bt)]
-            raw = {i[0]: i[1] for i in lis[:8000]}
     raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
     return raw, avgframe_ra20, avgframe_ra250
 
@@ -262,20 +255,19 @@ def angleaverages(filename, dis):
     return raw, avgframe_ra20, avgframe_ra250
 
 
-def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
-    folder_all = 'hbonds_all'
-    folder_adj = 'hbonds_adjacent'
-    # above two folders will have the data for H bond types amd per frame files
-
+def hbonds_calculator3layer(dirsim, dis):
+    filelis = ['hbonds_C_protein.dat', 'hbonds_C_BD.dat', 'hbonds_C_protein_bbbb.dat',
+               'hbonds_C_BD_bbbb.dat', 'hbonds_C_protein_scsc.dat', 'hbonds_C_BD_scsc.dat',
+               'hbonds_C_protein_scbb.dat', 'hbonds_C_BD_scbb.dat']
     has_map = {'hbonds_C_protein.dat': 'all', 'hbonds_C_BD.dat': 'adjacent',
                'hbonds_C_protein_bbbb.dat': 'allbbbb', 'hbonds_C_BD_bbbb.dat': 'adjacentbbbb',
                'hbonds_C_protein_scsc.dat': 'allscsc', 'hbonds_C_BD_scsc.dat': 'adjacentscsc',
                'hbonds_C_protein_scbb.dat': 'allscbb', 'hbonds_C_BD_scbb.dat': 'adjacentscbb'}
     has = {}
     for i in filelis:
-        raw, ra20, dispav = hbondaverages(
-            os.path.join(dirsim, i), dis, dispint)
-        has[has_map[i]] = (raw, ra20, dispint)
+        raw, ra20, ra250 = hbondaverages(
+            os.path.join(dirsim, i), dis)
+        has[has_map[i]] = (raw, ra20, ra250)
     return has
 
 

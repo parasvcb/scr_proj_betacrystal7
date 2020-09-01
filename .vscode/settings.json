@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/paras/miniconda3/envs/images/bin/python",
+    "python.pythonPath": "/home/paras/miniconda3/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true
