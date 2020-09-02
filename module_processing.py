@@ -246,6 +246,7 @@ def hbondaverages_new(directory, dis, dispint, framerange=False):
                     typebond.sort()
                     identity = [acc, don]
                     identity.sort()
+                    identity = tuple(identity)
                     if identity not in hbhas:
                         hbhas[identity] = 0
                     hbhas[identity] += 1
@@ -264,13 +265,13 @@ def hbondaverages_new(directory, dis, dispint, framerange=False):
         distrange = [dis[i] for i in framerange]
         maxd = max(distrange)
         mind = min(distrange)
-        raw_mcmcdispav = [raw_mcmcdispav[i]
-                          for i in raw_mcmcdispav if i not in mind <= i <= maxd]
-        raw_mcscdispav = [raw_mcscdispav[i]
-                          for i in raw_mcscdispav if i not in mind <= i <= maxd]
-        raw_scscdispav = [raw_scscdispav[i]
-                          for i in raw_scscdispav if i not in mind <= i <= maxd]
-
+        # print(raw_mcmcdispav)
+        raw_mcmcdispav = {i: raw_mcmcdispav[i]
+                          for i in raw_mcmcdispav if mind <= i <= maxd}
+        raw_mcscdispav = {i: raw_mcscdispav[i]
+                          for i in raw_mcscdispav if mind <= i <= maxd}
+        raw_scscdispav = {i: raw_scscdispav[i]
+                          for i in raw_scscdispav if mind <= i <= maxd}
     return raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav, raw_mcsc, raw_mcsc_ra20, raw_mcscdispav, raw_scsc, raw_scsc_ra20, raw_scscdispav
 
 
@@ -354,7 +355,7 @@ def hbonds_calculator1layer(dirsim, dis):
     return has
 
 
-def centreofmasscalc(filename, dis):
+def centreofmasscalc(filename, dis, dispint):
     with open(filename) as fin:
         dat = [i for i in fin.read().split('\n')[1:] if len(i) > 0]
     comupsublow1st = []
@@ -378,15 +379,15 @@ def centreofmasscalc(filename, dis):
 
     com1st = {i: val-comupsublow1st[0]
               for i, val in enumerate(comupsublow1st)}
-    com1st, com1_ra20, com1_ra250 = compute_averages(com1st, dis)
+    com1st, com1_ra20, com1_dispav = compute_averages(com1st, dis, dispint)
     com2nd = {i: val-comupsublow2nd[0]
               for i, val in enumerate(comupsublow2nd)}
-    com2nd, com2_ra20, com2_ra250 = compute_averages(com2nd, dis)
+    com2nd, com2_ra20, com2_dispav = compute_averages(com2nd, dis, dispint)
 
     com3rd = {i: val-comupsublow3rd[0]
               for i, val in enumerate(comupsublow3rd)}
-    com3rd, com3_ra20, com3_ra250 = compute_averages(com3rd, dis)
+    com3rd, com3_ra20, com3_dispav = compute_averages(com3rd, dis, dispint)
     print("com1st", comupsublow1st[0])
     print("com2nd", comupsublow2nd[0])
     print("com3rd", comupsublow3rd[0])
-    return com1st, com1_ra20, com1_ra250, com2nd, com2_ra20, com2_ra250, com3rd, com3_ra20, com3_ra250
+    return com1st, com1_ra20, com1_dispav, com2nd, com2_ra20, com2_dispav, com3rd, com3_ra20, com3_dispav

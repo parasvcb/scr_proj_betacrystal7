@@ -255,6 +255,7 @@ def hbonds_calculator3layer(psf, dcd, outfile):
         }
         exit
         ''' % (psf, dcd, outfile, outfile)
+    os.remove('hbonds.dat')
     res = callscript(script)
     del res
     return
@@ -367,7 +368,7 @@ def nanocrystal_volume(psf, pdb):
     exit
     ''' % (psf, pdb)
     res = callscript(script)
-    volume = fetchdistance(res)
+    volume = fetchvolume(res)
     return volume
 
 
