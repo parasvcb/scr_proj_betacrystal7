@@ -65,14 +65,14 @@ def callcatdcd(catdcd, indexfile, inpdcd, outdcd):
     return
 
 
-def callscript(script,mode="vmd"):
-    if mode =="vmd":
+def callscript(script, mode="vmd"):
+    if mode == "vmd":
         with open("tempscript.vmd", 'w') as fin:
             fin.write("%s" % script)
         res = subprocess.check_output(
             "vmd -dispdev text -e tempscript.vmd", shell=True)
     else:
-        #it should be R
+        # it should be R
         with open("tempscript.R", 'w') as fin:
             fin.write("%s" % script)
         res = subprocess.check_output(
@@ -234,25 +234,6 @@ def energy_calc_1layer(psf, pdb, dcd, output, pulling=True):
         print("ERROR temppullInt-->>", psf, pdb, output)
 
 
-def create_sc_protein(fileparent, filechild1, filechild2, namefile):
-    def hbondtohash(filename):
-        with open(filename) as fin:
-            dat = [i for i in fin.read().split('\n') if len(i) > 0]
-        has = {}
-        for i in dat:
-            ele = list(map(int, i.split()))
-            has[ele[0]] = ele[1]
-        return has
-    hasp = hbondtohash(fileparent)
-    hasc1 = hbondtohash(filechild1)
-    hasc2 = hbondtohash(filechild2)
-    keys = list(hasp.keys())
-    keys.sort()
-    with open(namefile, 'w') as fin:
-        for i in keys:
-            fin.write("%s %s" % (i, int(hasp[i])-int(hasc1[i])-int(hasc2[i])))
-
-
 def hbonds_calculator3layer(psf, dcd, outfile):
     script = '''
         package require hbonds
@@ -260,35 +241,22 @@ def hbonds_calculator3layer(psf, dcd, outfile):
         set g1 [atomselect top "chain C"]
         set g2 [atomselect top "protein and not chain C"]
         set g3 [atomselect top "chain B D"]
-        hbonds -sel1 $g1 -sel2 $g2 -dist 3.5 -ang 25 -outfile %s/hbonds_C_protein.dat -writefile yes -upsel yes -plot no
-        hbonds -sel1 $g1 -sel2 $g3 -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD.dat -writefile yes -upsel yes -plot no
+        
+        set mol [molinfo top]
+        set nf [molinfo $mol get numframes]
+    
+        for {set i 0} {$i < $nf} {incr i} {
+        $g1 frame $i
+        $g2 frame $i
+        $g3 frame $i
 
-        set g1bb [atomselect top "chain C and backbone"]
-        set g2bb [atomselect top "protein and not chain C and backbone"]
-        set g3bb [atomselect top "chain B D and backbone"]
-        hbonds -sel1 $g1bb -sel2 $g2bb -dist 3.5 -ang 25 -outfile %s/hbonds_C_protein_bbbb.dat -writefile yes -upsel yes -plot no
-        hbonds -sel1 $g1bb -sel2 $g3bb -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD_bbbb.dat -writefile yes -upsel yes -plot no
-
-        set g1sc [atomselect top "chain C and not backbone"]
-        set g2sc [atomselect top "protein and not chain C and not backbone"]
-        set g3sc [atomselect top "chain B D and not backbone"]
-        hbonds -sel1 $g1sc -sel2 $g2sc -dist 3.5 -ang 25 -outfile %s/hbonds_C_protein_scsc.dat -writefile yes -upsel yes -plot no
-        hbonds -sel1 $g1sc -sel2 $g3sc -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD_scsc.dat -writefile yes -upsel yes -plot no
-
+        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_all/$i.hbdata
+        hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_adjacent/$i.hbdata
+        }
         exit
-        ''' % (psf, dcd, outfile, outfile,  outfile, outfile,  outfile, outfile)
+        ''' % (psf, dcd, outfile, outfile)
     res = callscript(script)
     del res
-    fileparent = "%s/hbonds_C_protein.dat" % (outfile)
-    filechild1 = "%s/hbonds_C_protein_bbbb.dat" % (outfile)
-    filechild2 = "%s/hbonds_C_protein_scsc.dat" % (outfile)
-    filenewchild = "%s/hbonds_C_protein_scbb.dat" % (outfile)
-    create_sc_protein(fileparent, filechild1, filechild2, filenewchild)
-    fileparent = "%s/hbonds_C_BD.dat" % (outfile)
-    filechild1 = "%s/hbonds_C_BD_bbbb.dat" % (outfile)
-    filechild2 = "%s/hbonds_C_BD_scsc.dat" % (outfile)
-    filenewchild = "%s/hbonds_C_BD_scbb.dat" % (outfile)
-    create_sc_protein(fileparent, filechild1, filechild2, filenewchild)
     return
 
 
@@ -314,7 +282,6 @@ def hbonds_calculator1layer(psf, dcd, outfile):
     filechild1 = "%s/hbonds_C_BD_bbbb.dat" % (outfile)
     filechild2 = "%s/hbonds_C_BD_scsc.dat" % (outfile)
     filenewchild = "%s/hbonds_C_BD_scbb.dat" % (outfile)
-    create_sc_protein(fileparent, filechild1, filechild2, filenewchild)
     res = callscript(script)
     del res
     return
@@ -376,11 +343,13 @@ def nanocrystal_dimensions(psf, pdb, centermassfile):
     hasdist = fetchdistance(res)
     return hasdist
 
+
 def nanocrystal_volume(psf, pdb):
     def fetchvolume(text):
         text = text.decode('utf-8')
         # print(text)
-        vol = float(re.search(r'vol=\-?\d+\.?\d+', text).group().split("=")[-1])
+        vol = float(re.search(r'vol=\-?\d+\.?\d+',
+                              text).group().split("=")[-1])
         return abs(vol)
 
     script = '''
@@ -401,20 +370,21 @@ def nanocrystal_volume(psf, pdb):
     volume = fetchdistance(res)
     return volume
 
+
 def peakdistances(datastream, lis, needmaxorlow):
     upper, lower = lis
     # datastream will be 2d array, first value displacemnet and second value propertyX (which is force over here [to get peaks])
     datastream = [i for i in datastream if upper <= i[0] <= lower]
-    #get values withing displacement range
+    # get values withing displacement range
     maxval = datastream[0]
     minval = datastream[0]
-    #getting their disp,force pairs
+    # getting their disp,force pairs
     for i in datastream:
         if i[1] > maxval[1]:
             maxval = i
         if i[1] < minval[1]:
             minval = i
-        #comparing force at particular displacement intervals
+        # comparing force at particular displacement intervals
     if needmaxorlow == 'max':
         return maxval
     else:
@@ -435,7 +405,7 @@ def rmsd(dcd, minimizedpdb, output):
     write.table(dfr,"%s/rmsd_firstframe.txt" ,sep = "\\t" ,row.names = FALSE, col.names = TRUE, dec=".", quote=FALSE)
     write.table(dfrfrompdb,"%s/rmsd_frompdb.txt" ,sep = "\\t" ,row.names = FALSE, col.names = TRUE, dec=".", quote=FALSE)
     ''' % (dcd, minimizedpdb, output, output)
-    res = callscript(script,mode="R")
+    res = callscript(script, mode="R")
     return
 
 
@@ -495,13 +465,14 @@ def removewaterfromdcd(waterpsf, waterpdb, inpdcd, outdcd, catdcd, tempadd):
         print("dcd %s is missing.. exiting" % (inpdcd))
         sys.exit()
 
-def removewaterfrompdb(psf,pdb, outapp):
+
+def removewaterfrompdb(psf, pdb, outapp):
     script = '''
     mol load psf %s pdb %s
     set a [atomselect top protein]
     $a writepdb %s.pdb
     $a writepdb %s.psf
-    exit''' % (psf, pdb, outapp,outapp)
+    exit''' % (psf, pdb, outapp, outapp)
     # write that script and run it and remove it
     res = callscript(script)
     return

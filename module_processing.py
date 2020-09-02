@@ -122,7 +122,7 @@ def compute_averages(raw, dis, dispint, flag=True):
         avgframe_ra20 = {lis[i][2]: lisra20[i] for i in range(0, len(lisra20))}
         # then they are arranged as per frames
         dispavg = dispAvg(dis, raw, dispint)
-        return raw, avgframe_ra20
+        return raw, avgframe_ra20, dispavg
     else:
         # production run
         lis = [[i, raw[i]] for i in raw]
@@ -223,28 +223,55 @@ def hbondaverages(filename, dis, dispint):
 
 
 def hbondaverages_new(directory, dis, dispint, framerange=False):
+    # framerangewillbe a lilst of eligible frames
     # this will feed in the H bond data from frame file to hash
-    frames = framerange[1]-framerange[0]+1 if framerange else False
     filerange = os.listdir(directory) if not framerange \
-        else [i for i in os.listdir(directory) if framerange[0] <= int(i.split('.')[0]) <= framerange[1]]
+        else [str(i)+'.hbdata' for i in framerange]
+    # abvove can be costly step
     # SegCP1-ASN2-Main-N 	 SegBP1-ASN7-Side-OT1 	 100.00%
     hbhas = {}
+    raw_mcmc = {}
+    raw_mcsc = {}
+    raw_scsc = {}
     for fil in filerange:
-        with open(os.path.join(directory, fil)) as fin:
-            mcmc = 0
-            mcsc = 0
-            scsc = 0
-            for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
-                acc, don, occ = line.split()
-                typebond = [acc.split('-')[2], don.split('-')[2]]
-                classify = ''
-                ele = i.split()
-                at = int(ele[0])
-                bt = float(ele[1])
-                lis += [(at, bt)]
-            raw = {i[0]: i[1] for i in lis[:8000]}
-    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
-    return raw, avgframe_ra20, avgframe_ra250
+        frame = int(fil.split('.')[0])
+        if frame <= 8000:
+            with open(os.path.join(directory, fil)) as fin:
+                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')
+                           : 0, ('Side', 'Side'): 0}
+                for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
+                    acc, don, occ = line.split()
+                    # e.g it should be 1000.hbdata
+                    typebond = [acc.split('-')[2], don.split('-')[2]]
+                    typebond.sort()
+                    identity = [acc, don]
+                    identity.sort()
+                    if identity not in hbhas:
+                        hbhas[identity] = 0
+                    hbhas[identity] += 1
+                    hbtemp[tuple(typebond)] += 1
+
+            raw_mcmc[frame] = hbtemp[('Main', 'Main')]
+            raw_mcsc[frame] = hbtemp[('Main', 'Side')]
+            raw_scsc[frame] = hbtemp[('Side', 'Side')]
+    raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav = compute_averages(
+        raw_mcmc, dis, dispint)
+    raw_mcsc, raw_mcsc_ra20, raw_mcscdispav = compute_averages(
+        raw_mcsc, dis, dispint)
+    raw_scsc, raw_scsc_ra20, raw_scscdispav = compute_averages(
+        raw_scsc, dis, dispint)
+    if framerange:
+        distrange = [dis[i] for i in framerange]
+        maxd = max(distrange)
+        mind = min(distrange)
+        raw_mcmcdispav = [raw_mcmcdispav[i]
+                          for i in raw_mcmcdispav if i not in mind <= i <= maxd]
+        raw_mcscdispav = [raw_mcscdispav[i]
+                          for i in raw_mcscdispav if i not in mind <= i <= maxd]
+        raw_scscdispav = [raw_scscdispav[i]
+                          for i in raw_scscdispav if i not in mind <= i <= maxd]
+
+    return raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav, raw_mcsc, raw_mcsc_ra20, raw_mcscdispav, raw_scsc, raw_scsc_ra20, raw_scscdispav
 
 
 def angleaverages(filename, dis):
@@ -263,19 +290,54 @@ def angleaverages(filename, dis):
 
 
 def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
-    folder_all = 'hbonds_all'
-    folder_adj = 'hbonds_adjacent'
+    folder_all = os.path.join(dirsim, 'hbonds_all')
+    folder_adj = os.path.join(dirsim, 'hbonds_adjacent')
     # above two folders will have the data for H bond types amd per frame files
+    allmcmc, allmcmcra20, allmcmcdispav, allmcsc, allmcscra20, allmcscdispav, allscsc, allscscra20, allscscdispav = \
+        hbondaverages_new(folder_all, dis, dispint, framerange=False)
+    adjmcmc, adjmcmcra20, adjmcmcdispav, adjmcsc, adjmcscra20, adjmcscdispav, adjscsc, adjscscra20, adjscscdispav = \
+        hbondaverages_new(folder_adj, dis, dispint, framerange=False)
 
-    has_map = {'hbonds_C_protein.dat': 'all', 'hbonds_C_BD.dat': 'adjacent',
-               'hbonds_C_protein_bbbb.dat': 'allbbbb', 'hbonds_C_BD_bbbb.dat': 'adjacentbbbb',
-               'hbonds_C_protein_scsc.dat': 'allscsc', 'hbonds_C_BD_scsc.dat': 'adjacentscsc',
-               'hbonds_C_protein_scbb.dat': 'allscbb', 'hbonds_C_BD_scbb.dat': 'adjacentscbb'}
-    has = {}
-    for i in filelis:
-        raw, ra20, dispav = hbondaverages(
-            os.path.join(dirsim, i), dis, dispint)
-        has[has_map[i]] = (raw, ra20, dispint)
+    framesrange_first_ascent = [i for i in dis if dis[i] <= p1]
+    framesrange_second_ascent = [i for i in dis if d1 <= dis[i] <= p2]
+    all_p1mcmc, all_p1mcmcra20, all_p1mcmcdispav, all_p1mcsc, all_p1mcscra20, all_p1mcscdispav, all_p1scsc, all_p1scscra20, all_p1scscdispav = \
+        hbondaverages_new(folder_all, dis, dispint,
+                          framerange=framesrange_first_ascent)
+    adj_p1mcmc, adj_p1mcmcra20, adj_p1mcmcdispav, adj_p1mcsc, adj_p1mcscra20, adj_p1mcscdispav, adj_p1scsc, adj_p1scscra20, adj_p1scscdispav = \
+        hbondaverages_new(folder_adj, dis, dispint,
+                          framerange=framesrange_first_ascent)
+    all_p2mcmc, all_p2mcmcra20, all_p2mcmcdispav, all_p2mcsc, all_p2mcscra20, all_p2mcscdispav, all_p2scsc, all_p2scscra20, all_p2scscdispav = \
+        hbondaverages_new(folder_all, dis, dispint,
+                          framerange=framesrange_second_ascent)
+    adj_p2mcmc, adj_p2mcmcra20, adj_p2mcmcdispav, adj_p2mcsc, adj_p2mcscra20, adj_p2mcscdispav, adj_p2scsc, adj_p2scscra20, adj_p2scscdispav = \
+        hbondaverages_new(folder_adj, dis, dispint,
+                          framerange=framesrange_second_ascent)
+
+    has = {'hbonds_C_protein.dat': 'all', 'hbonds_C_BD.dat': 'adjacent',
+           'hbonds_C_protein_bbbb.dat': 'allbbbb', 'hbonds_C_BD_bbbb.dat': 'adjacentbbbb',
+           'hbonds_C_protein_scsc.dat': 'allscsc', 'hbonds_C_BD_scsc.dat': 'adjacentscsc',
+           'hbonds_C_protein_scbb.dat': 'allscbb', 'hbonds_C_BD_scbb.dat': 'adjacentscbb'}
+    has = {'all_mcmc_raw': allmcmc, 'all_mcsc_raw': allmcsc, 'all_scsc_raw': allscsc,
+           'all_mcmc_ra20': allmcmcra20, 'all_mcsc_ra20': allmcscra20, 'all_scsc_ra20': allscscra20,
+           'all_mcmc_dispav': allmcmcdispav, 'all_mcsc_dispav': allmcscdispav, 'all_scsc_dispav': allscscdispav,
+           'adj_mcmc_raw': adjmcmc, 'adj_mcsc_raw': adjmcsc, 'adj_scsc_raw': adjscsc,
+           'adj_mcmc_ra20': adjmcmcra20, 'adj_mcsc_ra20': adjmcscra20, 'adj_scsc_ra20': adjscscra20,
+           'adj_mcmc_dispav': adjmcmcdispav, 'adj_mcsc_dispav': adjmcscdispav, 'adj_scsc_dispav': adjscscdispav,
+
+           'all_p1_mcmc_raw': all_p1mcmc, 'all_p1_mcsc_raw': all_p1mcsc, 'all_p1_scsc_raw': all_p1scsc,
+           'all_p1_mcmc_ra20': all_p1mcmcra20, 'all_p1_mcsc_ra20': all_p1mcscra20, 'all_p1_scsc_ra20': all_p1scscra20,
+           'all_p1_mcmc_dispav': all_p1mcmcdispav, 'all_p1_mcsc_dispav': all_p1mcscdispav, 'all_p1_scsc_dispav': all_p1scscdispav,
+           'adj_p1_mcmc_raw': adj_p1mcmc, 'adj_p1_mcsc_raw': adj_p1mcsc, 'adj_p1_scsc_raw': adj_p1scsc,
+           'adj_p1_mcmc_ra20': adj_p1mcmcra20, 'adj_p1_mcsc_ra20': adj_p1mcscra20, 'adj_p1_scsc_ra20': adj_p1scscra20,
+           'adj_p1_mcmc_dispav': adj_p1mcmcdispav, 'adj_p1_mcsc_dispav': adj_p1mcscdispav, 'adj_p1_scsc_dispav': adj_p1scscdispav,
+
+           'all_p2_mcmc_raw': all_p2mcmc, 'all_p2_mcsc_raw': all_p2mcsc, 'all_p2_scsc_raw': all_p2scsc,
+           'all_p2_mcmc_ra20': all_p2mcmcra20, 'all_p2_mcsc_ra20': all_p2mcscra20, 'all_p2_scsc_ra20': all_p2scscra20,
+           'all_p2_mcmc_dispav': all_p2mcmcdispav, 'all_p2_mcsc_dispav': all_p2mcscdispav, 'all_p2_scsc_dispav': all_p2scscdispav,
+           'adj_p2_mcmc_raw': adj_p2mcmc, 'adj_p2_mcsc_raw': adj_p2mcsc, 'adj_p2_scsc_raw': adj_p2scsc,
+           'adj_p2_mcmc_ra20': adj_p2mcmcra20, 'adj_p2_mcsc_ra20': adj_p2mcscra20, 'adj_p2_scsc_ra20': adj_p2scscra20,
+           'adj_p2_mcmc_dispav': adj_p2mcmcdispav, 'adj_p2_mcsc_dispav': adj_p2mcscdispav, 'adj_p2_scsc_dispav': adj_p2scscdispav,
+           }
     return has
 
 

@@ -174,69 +174,72 @@ print(4)
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
-if not mdcom.checkFiles(['hbonds_C_protein.dat', 'hbonds_C_BD.dat', 'hbonds_C_protein_bbbb.dat',
-                         'hbonds_C_BD_bbbb.dat', 'hbonds_C_protein_scsc.dat', 'hbonds_C_BD_scsc.dat',
-                         'hbonds_C_protein_scbb.dat', 'hbonds_C_BD_scbb.dat'], directory=processingdir):
-    mdcom.hbonds_calculator3layer(
-        psf=psf, dcd=dcdpull, outfile=processingdir)
+tdirhball = os.path.join(processingdir, 'hbonds_all'
+tdirhbadj=os.path.join(processingdir, 'hbonds_adjacent')
+mdpro.makedir(tdirhball)
+mdpro.makedir(tdirhbadj)
+if not len(os.listdir(tdirhball) > 1000 and len(os.listdir(tdirhbadj) > 1000:
+    mdcom.hbonds_calculator3layer(psf=psf, dcd=dcdpull, outfile=processingdir)
 
 if not mdcom.checkFiles(['com_gcm_pull.log'], directory=processingdir):
     mdcom.com_calc(psf, dcdpull, centerofmasstclscript, processingdir)
 
-hbondData = mdpro.hbonds_calculator3layer(
+hbondData=mdpro.hbonds_calculator3layer(
     processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint)
-hb_all_raw, hb_all_ra20, hb_all_ra250 = hbondData['all']
-hb_adjacent_raw, hb_adjacent_ra20, hb_adjacent_ra250 = hbondData['adjacent']
-hb_allbbbb_raw, hb_allbbbb_ra20, hb_allbbbb_ra250 = hbondData['allbbbb']
-hb_adjacentbbbb_raw, hb_adjacentbbbb_ra20, hb_adjacentbbbb_ra250 = hbondData[
+print(hbondData.keys())
+sys.exit()
+hb_all_raw, hb_all_ra20, hb_all_ra250=hbondData['all']
+hb_adjacent_raw, hb_adjacent_ra20, hb_adjacent_ra250=hbondData['adjacent']
+hb_allbbbb_raw, hb_allbbbb_ra20, hb_allbbbb_ra250=hbondData['allbbbb']
+hb_adjacentbbbb_raw, hb_adjacentbbbb_ra20, hb_adjacentbbbb_ra250=hbondData[
     'adjacentbbbb']
-hb_allscsc_raw, hb_allscsc_ra20, hb_allscsc_ra250 = hbondData['allscsc']
-hb_adjacentscsc_raw, hb_adjacentscsc_ra20, hb_adjacentscsc_ra250 = hbondData[
+hb_allscsc_raw, hb_allscsc_ra20, hb_allscsc_ra250=hbondData['allscsc']
+hb_adjacentscsc_raw, hb_adjacentscsc_ra20, hb_adjacentscsc_ra250=hbondData[
     'adjacentscsc']
-hb_allscbb_raw, hb_allscbb_ra20, hb_allscbb_ra250 = hbondData['allscbb']
-hb_adjacentscbb_raw, hb_adjacentscbb_ra20, hb_adjacentscbb_ra250 = hbondData[
+hb_allscbb_raw, hb_allscbb_ra20, hb_allscbb_ra250=hbondData['allscbb']
+hb_adjacentscbb_raw, hb_adjacentscbb_ra20, hb_adjacentscbb_ra250=hbondData[
     'adjacentscbb']
 
 
-pse6, pse6ra20, pse6ra250 = mdpro.angleaverages(
+pse6, pse6ra20, pse6ra250=mdpro.angleaverages(
     os.path.join(processingdir, 'angle_resid6'), distC)
-pse4, pse4ra20, pse4ra250 = mdpro.angleaverages(
+pse4, pse4ra20, pse4ra250=mdpro.angleaverages(
     os.path.join(processingdir, 'angle_resid4'), distC)
 
 
-com1st, com1_ra20, com1_ra250, com2nd, com2_ra20, com2_ra250, com3rd,\
-    com3_ra20, com3_ra250 = mdpro.centreofmasscalc(
+com1st, com1_ra20, com1_ra250, com2nd, com2_ra20, com2_ra250, com3rd,
+    com3_ra20, com3_ra250=mdpro.centreofmasscalc(
         os.path.join(processingdir, "com_gcm_pull.log"), distC)
 
-#print("com1st", list(com1st.keys())[:10])
-hb_all_dispav = mdpro.dispAvg(distC, hb_all_raw, dispint)
-hb_adjacent_dispav = mdpro.dispAvg(distC, hb_adjacent_raw, dispint)
-hb_allbbbb_dispav = mdpro.dispAvg(distC, hb_allbbbb_raw, dispint)
-hb_allscsc_dispav = mdpro.dispAvg(distC, hb_allscsc_raw, dispint)
-hb_allscbb_dispav = mdpro.dispAvg(distC, hb_allscbb_raw, dispint)
-hb_adjacentbbbb_dispav = mdpro.dispAvg(
+# print("com1st", list(com1st.keys())[:10])
+hb_all_dispav=mdpro.dispAvg(distC, hb_all_raw, dispint)
+hb_adjacent_dispav=mdpro.dispAvg(distC, hb_adjacent_raw, dispint)
+hb_allbbbb_dispav=mdpro.dispAvg(distC, hb_allbbbb_raw, dispint)
+hb_allscsc_dispav=mdpro.dispAvg(distC, hb_allscsc_raw, dispint)
+hb_allscbb_dispav=mdpro.dispAvg(distC, hb_allscbb_raw, dispint)
+hb_adjacentbbbb_dispav=mdpro.dispAvg(
     distC, hb_adjacentbbbb_raw, dispint)
-hb_adjacentscsc_dispav = mdpro.dispAvg(
+hb_adjacentscsc_dispav=mdpro.dispAvg(
     distC, hb_adjacentscsc_raw, dispint)
-hb_adjacentscbb_dispav = mdpro.dispAvg(
+hb_adjacentscbb_dispav=mdpro.dispAvg(
     distC, hb_adjacentscbb_raw, dispint)
 
-pse6_dispav = mdpro.dispAvg(distC, pse6, dispint)
-pse4_dispav = mdpro.dispAvg(distC, pse4, dispint)
-com1_dispav = mdpro.dispAvg(distC, com1st, dispint)
+pse6_dispav=mdpro.dispAvg(distC, pse6, dispint)
+pse4_dispav=mdpro.dispAvg(distC, pse4, dispint)
+com1_dispav=mdpro.dispAvg(distC, com1st, dispint)
 # print(com1_dispav)
 print("done1")
-com2_dispav = mdpro.dispAvg(distC, com2nd, dispint)
+com2_dispav=mdpro.dispAvg(distC, com2nd, dispint)
 print("done2")
-com3_dispav = mdpro.dispAvg(distC, com3rd, dispint)
+com3_dispav=mdpro.dispAvg(distC, com3rd, dispint)
 print("done3")
-framecount = 8001
+framecount=8001
 for i in hb_allbbbb_dispav.keys():
     if i not in distC.values():
-        distC[framecount] = i
+        distC[framecount]=i
         framecount += 1
 
-df = pd.DataFrame([forceC, force_ra20, distC, velocityC, velocity_ra20,
+df=pd.DataFrame([forceC, force_ra20, distC, velocityC, velocity_ra20,
                    framestravelled, pse6, pse6ra20, pse4, pse4ra20, com1st, com1_ra20,
                    com2nd, com2_ra20, com3rd, com3_ra20, hb_all_raw, hb_all_ra20,
                    hb_adjacent_raw, hb_adjacent_ra20, hb_allbbbb_raw, hb_allbbbb_ra20,
@@ -250,49 +253,49 @@ df = pd.DataFrame([forceC, force_ra20, distC, velocityC, velocity_ra20,
                          'hballscsc-raw', 'hballscsc-ra20', 'hballscbb-raw', 'hballscbb-ra20',
                          'hbadjbbbb-raw', 'hbadjbbbb-ra20', 'hbadjscsc-raw',
                          'hbadjscsc-ra20', 'hbadjscbb-raw', 'hbadjscbb-ra20']).transpose()
-df['frames-raw'] = df.index
-df['hball-dispav'] = df['displacement'].map(hb_all_dispav)
-df['hbadj-dispav'] = df['displacement'].map(hb_adjacent_dispav)
-df['hballbbbb-dispav'] = df['displacement'].map(hb_allbbbb_dispav)
-df['hballscsc-dispav'] = df['displacement'].map(hb_allscsc_dispav)
-df['hballscbb-dispav'] = df['displacement'].map(hb_allscbb_dispav)
-df['hbadjbbbb-dispav'] = df['displacement'].map(hb_adjacentbbbb_dispav)
-df['hbadjscsc-dispav'] = df['displacement'].map(hb_adjacentscsc_dispav)
-df['hbadjscbb-dispav'] = df['displacement'].map(hb_adjacentscbb_dispav)
-df['pse6-dispav'] = df['displacement'].map(pse6_dispav)
-df['pse4-dispav'] = df['displacement'].map(pse4_dispav)
-df['com1-dispav'] = df['displacement'].map(com1_dispav)
-df['com2-dispav'] = df['displacement'].map(com2_dispav)
-df['com3-dispav'] = df['displacement'].map(com1_dispav)
-df['for-dispav'] = df['displacement'].map(forcedispav)
-df['vel-dispav'] = df['displacement'].map(vel_dispav)
-df['start-raw'] = df['displacement'].map(peakhas)
-df['end-raw'] = df['displacement'].map(downhas)
+df['frames-raw']=df.index
+df['hball-dispav']=df['displacement'].map(hb_all_dispav)
+df['hbadj-dispav']=df['displacement'].map(hb_adjacent_dispav)
+df['hballbbbb-dispav']=df['displacement'].map(hb_allbbbb_dispav)
+df['hballscsc-dispav']=df['displacement'].map(hb_allscsc_dispav)
+df['hballscbb-dispav']=df['displacement'].map(hb_allscbb_dispav)
+df['hbadjbbbb-dispav']=df['displacement'].map(hb_adjacentbbbb_dispav)
+df['hbadjscsc-dispav']=df['displacement'].map(hb_adjacentscsc_dispav)
+df['hbadjscbb-dispav']=df['displacement'].map(hb_adjacentscbb_dispav)
+df['pse6-dispav']=df['displacement'].map(pse6_dispav)
+df['pse4-dispav']=df['displacement'].map(pse4_dispav)
+df['com1-dispav']=df['displacement'].map(com1_dispav)
+df['com2-dispav']=df['displacement'].map(com2_dispav)
+df['com3-dispav']=df['displacement'].map(com1_dispav)
+df['for-dispav']=df['displacement'].map(forcedispav)
+df['vel-dispav']=df['displacement'].map(vel_dispav)
+df['start-raw']=df['displacement'].map(peakhas)
+df['end-raw']=df['displacement'].map(downhas)
 df['vel-dispav']
 # print(pse6_dispav)
 # this will be added
 df.to_csv(os.path.join(outfile, "dataframe_vnew.tsv"), index=False, sep='\t')
 
-has_hb_all = {peak1[0]: hb_all_dispav[peak1[0]],
+has_hb_all={peak1[0]: hb_all_dispav[peak1[0]],
               peak2[0]: hb_all_dispav[peak2[0]]}
-has_hb_all_bbbb = {peak1[0]: hb_allbbbb_dispav[peak1[0]],
+has_hb_all_bbbb={peak1[0]: hb_allbbbb_dispav[peak1[0]],
                    peak2[0]: hb_allbbbb_dispav[peak2[0]]}
-has_hb_all_scsc = {peak1[0]: hb_allscsc_dispav[peak1[0]],
+has_hb_all_scsc={peak1[0]: hb_allscsc_dispav[peak1[0]],
                    peak2[0]: hb_allscsc_dispav[peak2[0]]}
-has_hb_all_scbb = {peak1[0]: hb_allscbb_dispav[peak1[0]],
+has_hb_all_scbb={peak1[0]: hb_allscbb_dispav[peak1[0]],
                    peak2[0]: hb_allscbb_dispav[peak2[0]]}
-has_hb_adjacent = {peak1[0]: hb_adjacent_dispav[peak1[0]],
+has_hb_adjacent={peak1[0]: hb_adjacent_dispav[peak1[0]],
                    peak2[0]: hb_adjacent_dispav[peak2[0]]}
-has_hb_adjacent_bbbb = {peak1[0]: hb_adjacentbbbb_dispav[peak1[0]],
+has_hb_adjacent_bbbb={peak1[0]: hb_adjacentbbbb_dispav[peak1[0]],
                         peak2[0]: hb_adjacentbbbb_dispav[peak2[0]]}
-has_hb_adjacent_scsc = {peak1[0]: hb_adjacentscsc_dispav[peak1[0]],
+has_hb_adjacent_scsc={peak1[0]: hb_adjacentscsc_dispav[peak1[0]],
                         peak2[0]: hb_adjacentscsc_dispav[peak2[0]]}
-has_hb_adjacent_scbb = {peak1[0]: hb_adjacentscbb_dispav[peak1[0]],
+has_hb_adjacent_scbb={peak1[0]: hb_adjacentscbb_dispav[peak1[0]],
                         peak2[0]: hb_adjacentscbb_dispav[peak2[0]]}
-dfhb = pd.DataFrame([has_hb_all, has_hb_all_bbbb, has_hb_all_scsc, has_hb_all_scbb, has_hb_adjacent,
+dfhb=pd.DataFrame([has_hb_all, has_hb_all_bbbb, has_hb_all_scsc, has_hb_all_scbb, has_hb_adjacent,
                      has_hb_adjacent_bbbb, has_hb_adjacent_scsc, has_hb_adjacent_scbb],
                     index=['has_hb_all', 'has_hb_all_bbbb', 'has_hb_all_scsc', 'has_hb_all_scbb', 'has_hb_adjacent',
                            'has_hb_adjacent_bbbb', 'has_hb_adjacent_scsc', 'has_hb_adjacent_scbb']).transpose()
 # print(dfhb)
-dfhb['displacement'] = dfhb.index
+dfhb['displacement']=dfhb.index
 dfhb.to_csv(os.path.join(outfile, "hbonds_peaks.tsv"), index=False, sep='\t')
