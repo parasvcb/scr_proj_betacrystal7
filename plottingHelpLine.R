@@ -9,7 +9,7 @@ if (length(args)<2) {
 library(ggplot2)
 library(reshape)
 
-
+ 
 directories=list.dirs(path = systemFile, full.names = TRUE, recursive=F)
 
 cropDF <- function(dfpre,polymer) {

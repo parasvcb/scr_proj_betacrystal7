@@ -250,8 +250,8 @@ def hbonds_calculator3layer(psf, dcd, outfile):
         $g2 frame $i
         $g3 frame $i
 
-        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_all/$i.hbdata
-        hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_adjacent/$i.hbdata
+        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_all/$i.hbdata
+        hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_adjacent/$i.hbdata
         }
         exit
         ''' % (psf, dcd, outfile, outfile)
@@ -355,7 +355,7 @@ def nanocrystal_volume(psf, pdb):
 
     script = '''
     mol load psf %s pdb %s
-    set a [atomselect top "protein"]
+    set a [atomselect top "protein and backbone"]
     
     set dim [measure minmax $a]
     set x [expr [lindex $dim 0 0] - [lindex $dim 1 0]]

@@ -1,20 +1,14 @@
 
-        package require hbonds
-        mol load psf ../menton_set/polyalanine_default/processed/wowater.psf dcd ../menton_set/polyalanine_default/processed/wowaterpulling.dcd
-        set g1 [atomselect top "chain C"]
-        set g2 [atomselect top "protein and not chain C"]
-        set g3 [atomselect top "chain B D"]
-        
-        set mol [molinfo top]
-        set nf [molinfo $mol get numframes]
+    mol load psf ../tyrone_set3/polyvaline/before_mini/ionized.psf pdb ../tyrone_set3/polyvaline/before_mini/ionized.pdb
+    set a [atomselect top "protein and backbone"]
     
-        for {set i 0} {$i < $nf} {incr i} {
-        $g1 frame $i
-        $g2 frame $i
-        $g3 frame $i
-
-        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout ../menton_set/polyalanine_default/processed/hbonds_all/$i.hbdata
-        hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 4 -ang 40 -writefile yes -upsel yes -plot no -type unique -detailout ../menton_set/polyalanine_default/processed/hbonds_adjacent/$i.hbdata
-        }
-        exit
-        
+    set dim [measure minmax $a]
+    set x [expr [lindex $dim 0 0] - [lindex $dim 1 0]]
+    set y [expr [lindex $dim 0 1] - [lindex $dim 1 1]]
+    set z [expr [lindex $dim 0 2] - [lindex $dim 1 2]]
+    
+    set vol [expr $x * $y *$z]
+    
+    puts "vol=$vol"
+    exit
+    
