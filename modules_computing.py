@@ -239,7 +239,8 @@ def hbonds_calculator3layer(psf, dcd, outfile):
         package require hbonds
         mol load psf %s dcd %s
         set g1 [atomselect top "chain C"]
-        set g2 [atomselect top "protein and not chain C"]
+        #set g2 [atomselect top "protein and not chain C"]
+        set g2 [atomselect top "protein and not chain C B D"]
         set g3 [atomselect top "chain B D"]
         
         set mol [molinfo top]
@@ -250,12 +251,13 @@ def hbonds_calculator3layer(psf, dcd, outfile):
         $g2 frame $i
         $g3 frame $i
 
-        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_all/$i.hbdata
+        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_nonadj/$i.hbdata
         hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_adjacent/$i.hbdata
         }
         exit
         ''' % (psf, dcd, outfile, outfile)
-    os.remove('hbonds.dat')
+    if os.path.isfile('hbonds.dat'):
+        os.remove('hbonds.dat')
     res = callscript(script)
     del res
     return

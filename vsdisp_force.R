@@ -57,16 +57,20 @@ plotallad <- function(df,extractele,outapp) {
     #print(head(df))
     dfset=df[(df$keeps=='keep'),]
     #print(head(dfset))
+    #print(unique(dfset$avtype))
+    #print(unique(dfset$avtype))
     print ("here")
-    #dfset=dfset[!(dfset$avtype=='ra20'),]
-    dfset1=dfset[(dfset$avtype=='ra20'),]
-    dfset2=dfset[(dfset$avtype=='raw'),]
     
+    #dfset1=dfset[(dfset$avtype=='ra20'),]
+    dfset1=dfset[(dfset$avtype=='dispav'),]
+    dfset2=dfset[(dfset$avtype=='raw'),]
+    #print(head(dfset1))
+
     print ('2')
     
     gg <- ggplot()
-    gg <- gg + geom_line(data=dfset2, aes(x=displacement,y=value/1000),color='lightgray', size=0.6)
-    gg <- gg + geom_line(data=dfset1, aes(x=displacement,y=value/1000),color='black', size=0.6)
+    gg <- gg + geom_line(data=dfset2[!is.na(dfset2$value),], aes(x=displacement,y=value/1000),color='gray', size=0.6)
+    gg <- gg + geom_line(data=dfset1[!is.na(dfset1$value),], aes(x=displacement,y=value/1000),color='black', size=0.4)
     gg <- gg + facet_wrap(~polymer,ncol=1) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + theme (strip.text.x = element_text(size = 6),axis.text.x = element_text( hjust = 1, size = 6, angle = 45),axis.text.y = element_text( hjust = 1, size = 6), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))

@@ -1,0 +1,6 @@
+
+python cumulative_df.py ../ ../data_tsv/out
+#Rscript plothb_hbplot.R 
+Rscript barplot_hbatpeaks.R
+Rscript vsdisp_hbondcount.R ../menton_set/ ../plots/new4sep/
+Rscript vsdisp_force.R ../menton_set/ ../plots/new4sep/

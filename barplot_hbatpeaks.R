@@ -31,5 +31,5 @@ gg <- gg + facet_wrap(~polymer,ncol=1,scale='free_x')
 ggsave(filename = outputfile, height=15, width=5)
 
 }
-plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata.png")
-plothbdata("../data_tsv/out_hbonds_peak_2.tsv","../plots/new4sep/peak2_hbdata.png")
+plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata.pdf")
+plothbdata("../data_tsv/out_hbonds_peak_2.tsv","../plots/new4sep/peak2_hbdata.pdf")

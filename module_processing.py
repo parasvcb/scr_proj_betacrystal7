@@ -57,7 +57,7 @@ def toughness(has, toughnessDistance, crysvol):
     '''
     def return_jm3(pnm_forceDist, vol_ang3):
         #print ('force:%s,vol:%s'%(pnm_forceDist,vol_ang3))
-        #will return in Mega joules
+        # will return in Mega joules
         return (((pnm_forceDist*1e-22) / (vol_ang3*1e-30))*1e-6)
     tkeys = list(has.keys())
     tkeys.sort()
@@ -223,60 +223,61 @@ def hbondaverages(filename, dis, dispint):
     return raw, avgframe_ra20, avgframe_ra250
 
 
-def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1,maxd=22):
-    def refine_atomtype(key_hbatom,typebond):
+def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1, maxd=22):
+    def refine_atomtype(key_hbatom, typebond):
         if 'OT' in key_hbatom[0] and 'OT' in key_hbatom[1]:
-            typebond=['Main','Main']
+            typebond = ['Main', 'Main']
         elif 'OT' in key_hbatom[0]:
-            typebond[0]='Main'
+            typebond[0] = 'Main'
         else:
-            typebond[1]='Main'
+            typebond[1] = 'Main'
         return typebond
-    def stoch_stable_hunter(stoch,stab,framewise,framerange):
-        mcmcstoch_raw={}
-        mcmcstab_raw={}
-        scscstoch_raw={}
-        scscstab_raw={}
-        mcscstoch_raw={}
-        mcscstab_raw={}
+
+    def stoch_stable_hunter(stoch, stab, framewise, framerange):
+        mcmcstoch_raw = {}
+        mcmcstab_raw = {}
+        scscstoch_raw = {}
+        scscstab_raw = {}
+        mcscstoch_raw = {}
+        mcscstab_raw = {}
         #print (len(set(framerange)&set(framewise.keys())), list(set(framerange)&set(framewise.keys()))[:5])
-        
-        for frame in set(framerange)&set(framewise.keys()):
-            templishb=[]
+
+        for frame in set(framerange) & set(framewise.keys()):
+            templishb = []
             for i in framewise[frame]:
-                accele=i[0].split("-")
-                donele=i[1].split("-")
-                typebond=[accele[2],donele[2]]
-                key_hbatom=[accele[3],donele[3]]
+                accele = i[0].split("-")
+                donele = i[1].split("-")
+                typebond = [accele[2], donele[2]]
+                key_hbatom = [accele[3], donele[3]]
                 if 'C' in key_hbatom[0] and 'C' in key_hbatom[1]:
                     continue
                 if 'OT' in key_hbatom[0] or 'OT' in key_hbatom[1]:
-                    typebond=refine_atomtype(key_hbatom,typebond)
+                    typebond = refine_atomtype(key_hbatom, typebond)
                 typebond.sort()
-                templishb+=[(list(i),(typebond[0],typebond[1]))]
+                templishb += [(list(i), (typebond[0], typebond[1]))]
             #templishb=[(list(i),(i[0].split('-')[2],i[1].split('-')[2])) for i in framewise[frame]]
             # print (len(templishb),templishb[:10])
             # sys.exit()
-            mcmc=[]
-            scsc=[]
-            mcsc=[]
+            mcmc = []
+            scsc = []
+            mcsc = []
             for hb in templishb:
 
-                hbtemp=hb[0]
+                hbtemp = hb[0]
                 hbtemp.sort()
-                if hb[1]==('Main','Main'):
-                    mcmc+=[tuple(hbtemp)]
-                elif hb[1]==('Side','Side'):
-                    scsc+=[tuple(hbtemp)]
+                if hb[1] == ('Main', 'Main'):
+                    mcmc += [tuple(hbtemp)]
+                elif hb[1] == ('Side', 'Side'):
+                    scsc += [tuple(hbtemp)]
                 else:
-                    mcsc+=[tuple(hbtemp)]
-            mcmcstoch_raw[frame]=len([i for i in mcmc if i in stoch])
-            mcmcstab_raw[frame]=len([i for i in mcmc if i in stab])
-            scscstoch_raw[frame]=len([i for i in scsc if i in stoch])
-            scscstab_raw[frame]=len([i for i in scsc if i in stab])
-            mcscstoch_raw[frame]=len([i for i in mcsc if i in stoch])
-            mcscstab_raw[frame]=len([i for i in mcsc if i in stab])
-        return mcmcstoch_raw,mcmcstab_raw,scscstoch_raw,scscstab_raw,mcscstoch_raw,mcscstab_raw
+                    mcsc += [tuple(hbtemp)]
+            mcmcstoch_raw[frame] = len([i for i in mcmc if i in stoch])
+            mcmcstab_raw[frame] = len([i for i in mcmc if i in stab])
+            scscstoch_raw[frame] = len([i for i in scsc if i in stoch])
+            scscstab_raw[frame] = len([i for i in scsc if i in stab])
+            mcscstoch_raw[frame] = len([i for i in mcsc if i in stoch])
+            mcscstab_raw[frame] = len([i for i in mcsc if i in stab])
+        return mcmcstoch_raw, mcmcstab_raw, scscstoch_raw, scscstab_raw, mcscstoch_raw, mcscstab_raw
 
     # framerangewillbe a lilst of eligible frames
     # this will feed in the H bond data from frame file to hash
@@ -285,13 +286,13 @@ def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1,maxd=22
     # abvove can be costly step
     # SegCP1-ASN2-Main-N 	 SegBP1-ASN7-Side-OT1 	 100.00%
     hbhas = {}
-    framewise={}
+    framewise = {}
     raw_mcmc = {}
     raw_mcsc = {}
     raw_scsc = {}
     for fil in filerange:
         frame = int(fil.split('.')[0])
-        framewise[frame]=[]
+        framewise[frame] = []
         if frame <= 8000:
             with open(os.path.join(directory, fil)) as fin:
                 hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')
@@ -300,15 +301,15 @@ def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1,maxd=22
                     acc, don, occ = line.split()
                     # e.g it should be 1000.hbdata
                     # add condition, if both C,C continue statemnet
-                    # of OT1 or OT2, then add main 
-                    accele=acc.split("-")
-                    donele=don.split("-")
-                    typebond=[accele[2],donele[2]]
-                    key_hbatom=[accele[3],donele[3]]
+                    # of OT1 or OT2, then add main
+                    accele = acc.split("-")
+                    donele = don.split("-")
+                    typebond = [accele[2], donele[2]]
+                    key_hbatom = [accele[3], donele[3]]
                     if 'C' in key_hbatom[0] and 'C' in key_hbatom[1]:
                         continue
                     if 'OT' in key_hbatom[0] or 'OT' in key_hbatom[1]:
-                        typebond=refine_atomtype(key_hbatom,typebond)
+                        typebond = refine_atomtype(key_hbatom, typebond)
                     typebond.sort()
                     identity = [acc, don]
                     identity.sort()
@@ -316,74 +317,81 @@ def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1,maxd=22
                     if identity not in hbhas:
                         hbhas[identity] = [frame]
                     hbhas[identity] += [frame]
-                    framewise[frame]+=[identity]
+                    framewise[frame] += [identity]
                     hbtemp[tuple(typebond)] += 1
 
             raw_mcmc[frame] = hbtemp[('Main', 'Main')]
             raw_mcsc[frame] = hbtemp[('Main', 'Side')]
             raw_scsc[frame] = hbtemp[('Side', 'Side')]
-    
-    if framerange:
-        #get in form of stochastic and stable values
-        stochastic_mcmc={}
-        stable_mcmc={}
-        stochastic_scsc={}
-        stable_scsc={}
-        stochastic_mcsc={}
-        stable_mcsc={}
 
-        cuttoff=0.60
-        stochastic={}
-        stable={}
+    if framerange:
+        # get in form of stochastic and stable values
+        stochastic_mcmc = {}
+        stable_mcmc = {}
+        stochastic_scsc = {}
+        stable_scsc = {}
+        stochastic_mcsc = {}
+        stable_mcsc = {}
+
+        cuttoff = 0.60
+        stochastic = {}
+        stable = {}
         for hbond in hbhas:
-            presence=len(set(hbhas[hbond])&set(framerange))/len(framerange)
-            if presence>=0.6:
-                stable[hbond]=0
+            presence = len(set(hbhas[hbond]) & set(framerange))/len(framerange)
+            if presence >= 0.6:
+                stable[hbond] = 0
             else:
-                stochastic[hbond]=0
+                stochastic[hbond] = 0
         #print (len(stable),len(stochastic))
-        #print(stable)
+        # print(stable)
         #
-        mcmcstoch_raw, mcmcstab_raw,scscstoch_raw,scscstab_raw,mcscstoch_raw,mcscstab_raw=stoch_stable_hunter(stochastic,stable,framewise,framerange)
-        mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav = compute_averages(mcmcstoch_raw, dis, dispint)
+        mcmcstoch_raw, mcmcstab_raw, scscstoch_raw, scscstab_raw, mcscstoch_raw, mcscstab_raw = stoch_stable_hunter(
+            stochastic, stable, framewise, framerange)
+        mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav = compute_averages(
+            mcmcstoch_raw, dis, dispint)
         # print (mcmcstoch_ra20)
         # print (mcmcstochdispav)
-        #sys.exit()
-        
-        mcmcstab_raw, mcmcstab_ra20, mcmcstabdispav = compute_averages(mcmcstab_raw, dis, dispint)
-        scscstoch_raw, scscstoch_ra20, scscstochdispav = compute_averages(scscstoch_raw, dis, dispint)
-        scscstab_raw, scscstab_ra20, scscstabdispav = compute_averages(scscstab_raw, dis, dispint)
-        mcscstoch_raw, mcscstoch_ra20, mcscstochdispav = compute_averages(mcscstoch_raw, dis, dispint)
-        mcscstab_raw, mcscstab_ra20, mcscstabdispav = compute_averages(mcscstab_raw, dis, dispint)
-        
+        # sys.exit()
+
+        mcmcstab_raw, mcmcstab_ra20, mcmcstabdispav = compute_averages(
+            mcmcstab_raw, dis, dispint)
+        scscstoch_raw, scscstoch_ra20, scscstochdispav = compute_averages(
+            scscstoch_raw, dis, dispint)
+        scscstab_raw, scscstab_ra20, scscstabdispav = compute_averages(
+            scscstab_raw, dis, dispint)
+        mcscstoch_raw, mcscstoch_ra20, mcscstochdispav = compute_averages(
+            mcscstoch_raw, dis, dispint)
+        mcscstab_raw, mcscstab_ra20, mcscstabdispav = compute_averages(
+            mcscstab_raw, dis, dispint)
+
         # distrange = [dis[i] for i in framerange]
         # maxd = max(distrange)
         # mind = min(distrange)
         # print (maxd,mind)
-        #sys.exit()
+        # sys.exit()
         # print(raw_mcmcdispav)
         mcmcstochdispav = {i: mcmcstochdispav[i]
-                          for i in mcmcstochdispav if mind <= i <= maxd}
+                           for i in mcmcstochdispav if mind <= i <= maxd}
         mcmcstabdispav = {i: mcmcstabdispav[i]
                           for i in mcmcstabdispav if mind <= i <= maxd}
         scscstochdispav = {i: scscstochdispav[i]
-                          for i in scscstochdispav if mind <= i <= maxd}
+                           for i in scscstochdispav if mind <= i <= maxd}
         scscstabdispav = {i: scscstabdispav[i]
                           for i in scscstabdispav if mind <= i <= maxd}
         mcscstochdispav = {i: mcscstochdispav[i]
-                          for i in mcscstochdispav if mind <= i <= maxd}
+                           for i in mcscstochdispav if mind <= i <= maxd}
         mcscstabdispav = {i: mcscstabdispav[i]
                           for i in mcscstabdispav if mind <= i <= maxd}
-        
+
         return mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav, \
             mcmcstab_raw, mcmcstab_ra20, mcmcstabdispav, \
-                scscstoch_raw, scscstoch_ra20, scscstochdispav, \
-                    scscstab_raw, scscstab_ra20, scscstabdispav, \
-                        mcscstoch_raw, mcscstoch_ra20, mcscstochdispav, \
-                            mcscstab_raw, mcscstab_ra20, mcscstabdispav 
+            scscstoch_raw, scscstoch_ra20, scscstochdispav, \
+            scscstab_raw, scscstab_ra20, scscstabdispav, \
+            mcscstoch_raw, mcscstoch_ra20, mcscstochdispav, \
+            mcscstab_raw, mcscstab_ra20, mcscstabdispav
     else:
         raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav = compute_averages(
-        raw_mcmc, dis, dispint)
+            raw_mcmc, dis, dispint)
         raw_mcsc, raw_mcsc_ra20, raw_mcscdispav = compute_averages(
             raw_mcsc, dis, dispint)
         raw_scsc, raw_scsc_ra20, raw_scscdispav = compute_averages(
@@ -407,8 +415,9 @@ def angleaverages(filename, dis):
 
 
 def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
-    print (p1,d1,p2,"peaks")
-    folder_all = os.path.join(dirsim, 'hbonds_all')
+    print(p1, d1, p2, "peaks")
+    #folder_all = os.path.join(dirsim, 'hbonds_all')
+    folder_all = os.path.join(dirsim, 'hbonds_nonadj')
     folder_adj = os.path.join(dirsim, 'hbonds_adjacent')
     # above two folders will have the data for H bond types amd per frame files
     allmcmc, allmcmcra20, allmcmcdispav, allmcsc, allmcscra20, allmcscdispav, allscsc, allscscra20, allscscdispav = \
@@ -419,34 +428,34 @@ def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
     framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
     framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
     allp1mcmcstoch_raw, allp1mcmcstoch_ra20, allp1mcmcstochdispav, \
-    allp1mcmcstab_raw, allp1mcmcstab_ra20, allp1mcmcstabdispav, \
-    allp1scscstoch_raw, allp1scscstoch_ra20, allp1scscstochdispav, \
-    allp1scscstab_raw, allp1scscstab_ra20, allp1scscstabdispav, \
-    allp1mcscstoch_raw, allp1mcscstoch_ra20, allp1mcscstochdispav, \
-    allp1mcscstab_raw, allp1mcscstab_ra20, allp1mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
-                          framerange=framesrange_first_ascent,maxd=p1)
-    #sys.exit()
+        allp1mcmcstab_raw, allp1mcmcstab_ra20, allp1mcmcstabdispav, \
+        allp1scscstoch_raw, allp1scscstoch_ra20, allp1scscstochdispav, \
+        allp1scscstab_raw, allp1scscstab_ra20, allp1scscstabdispav, \
+        allp1mcscstoch_raw, allp1mcscstoch_ra20, allp1mcscstochdispav, \
+        allp1mcscstab_raw, allp1mcscstab_ra20, allp1mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
+                                                                                       framerange=framesrange_first_ascent, maxd=p1)
+    # sys.exit()
     adjp1mcmcstoch_raw, adjp1mcmcstoch_ra20, adjp1mcmcstochdispav, \
-    adjp1mcmcstab_raw, adjp1mcmcstab_ra20, adjp1mcmcstabdispav, \
-    adjp1scscstoch_raw, adjp1scscstoch_ra20, adjp1scscstochdispav, \
-    adjp1scscstab_raw, adjp1scscstab_ra20, adjp1scscstabdispav, \
-    adjp1mcscstoch_raw, adjp1mcscstoch_ra20, adjp1mcscstochdispav, \
-    adjp1mcscstab_raw, adjp1mcscstab_ra20, adjp1mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
-                          framerange=framesrange_first_ascent, maxd=p1)
+        adjp1mcmcstab_raw, adjp1mcmcstab_ra20, adjp1mcmcstabdispav, \
+        adjp1scscstoch_raw, adjp1scscstoch_ra20, adjp1scscstochdispav, \
+        adjp1scscstab_raw, adjp1scscstab_ra20, adjp1scscstabdispav, \
+        adjp1mcscstoch_raw, adjp1mcscstoch_ra20, adjp1mcscstochdispav, \
+        adjp1mcscstab_raw, adjp1mcscstab_ra20, adjp1mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
+                                                                                       framerange=framesrange_first_ascent, maxd=p1)
     allp2mcmcstoch_raw, allp2mcmcstoch_ra20, allp2mcmcstochdispav, \
-    allp2mcmcstab_raw, allp2mcmcstab_ra20, allp2mcmcstabdispav, \
-    allp2scscstoch_raw, allp2scscstoch_ra20, allp2scscstochdispav, \
-    allp2scscstab_raw, allp2scscstab_ra20, allp2scscstabdispav, \
-    allp2mcscstoch_raw, allp2mcscstoch_ra20, allp2mcscstochdispav, \
-    allp2mcscstab_raw, allp2mcscstab_ra20, allp2mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
-                          framerange=framesrange_second_ascent, mind=d1,maxd=p2)
+        allp2mcmcstab_raw, allp2mcmcstab_ra20, allp2mcmcstabdispav, \
+        allp2scscstoch_raw, allp2scscstoch_ra20, allp2scscstochdispav, \
+        allp2scscstab_raw, allp2scscstab_ra20, allp2scscstabdispav, \
+        allp2mcscstoch_raw, allp2mcscstoch_ra20, allp2mcscstochdispav, \
+        allp2mcscstab_raw, allp2mcscstab_ra20, allp2mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
+                                                                                       framerange=framesrange_second_ascent, mind=d1, maxd=p2)
     adjp2mcmcstoch_raw, adjp2mcmcstoch_ra20, adjp2mcmcstochdispav, \
-    adjp2mcmcstab_raw, adjp2mcmcstab_ra20, adjp2mcmcstabdispav, \
-    adjp2scscstoch_raw, adjp2scscstoch_ra20, adjp2scscstochdispav, \
-    adjp2scscstab_raw, adjp2scscstab_ra20, adjp2scscstabdispav, \
-    adjp2mcscstoch_raw, adjp2mcscstoch_ra20, adjp2mcscstochdispav, \
-    adjp2mcscstab_raw, adjp2mcscstab_ra20, adjp2mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
-                          framerange=framesrange_second_ascent, mind=d1,maxd=p2)
+        adjp2mcmcstab_raw, adjp2mcmcstab_ra20, adjp2mcmcstabdispav, \
+        adjp2scscstoch_raw, adjp2scscstoch_ra20, adjp2scscstochdispav, \
+        adjp2scscstab_raw, adjp2scscstab_ra20, adjp2scscstabdispav, \
+        adjp2mcscstoch_raw, adjp2mcscstoch_ra20, adjp2mcscstochdispav, \
+        adjp2mcscstab_raw, adjp2mcscstab_ra20, adjp2mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
+                                                                                       framerange=framesrange_second_ascent, mind=d1, maxd=p2)
 
     has = {'all_mcmc_raw': allmcmc, 'all_mcsc_raw': allmcsc, 'all_scsc_raw': allscsc,
            'all_mcmc_ra20': allmcmcra20, 'all_mcsc_ra20': allmcscra20, 'all_scsc_ra20': allscscra20,
@@ -482,7 +491,7 @@ def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
            'adjp2mcmcstabraw': adjp2mcmcstab_raw, 'adjp2mcscstabraw': adjp2mcscstab_raw, 'adjp2scscstabraw': adjp2scscstab_raw,
            'adjp2mcmcstabra20': adjp2mcmcstab_ra20, 'adjp2mcscstabra20': adjp2mcscstab_ra20, 'adjp2scscstabra20': adjp2scscstab_ra20,
            'adjp2mcmcstabdispav': adjp2mcmcstabdispav, 'adjp2mcscstabdispav': adjp2mcscstabdispav, 'adjp2scscstabdispav': adjp2scscstabdispav,
-         
+
            }
     return has
 

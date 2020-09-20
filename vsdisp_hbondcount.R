@@ -60,9 +60,12 @@ plotallad <- function(df,extractele,outapp) {
                    ifelse(grepl('scsc',df$category), 'scsc',
                 ifelse(grepl('mcsc',df$category), 'mcsc',   'force')))
     dfset=df[(df$keeps=='keep'),]
-    #print(head(dfset))
+    dfset=dfset[!(dfset$variable=='for-dispav'),]
+    #the above can be removed to add thin layout to force in bacground
+    
     print ("here")
-    dfset=dfset[(dfset$avtype=='ra20'),]
+    #dfset=dfset[(dfset$avtype=='ra20'),]
+    dfset=dfset[(dfset$avtype=='dispav'),]
     print ('2')
     #print (head(dfset))
     #print (unique(dfset$variable))
@@ -76,17 +79,17 @@ plotallad <- function(df,extractele,outapp) {
     # print (unique(dfset1$value))
     # write.csv(dfset1,'check.tsv',sep = "\t")
 
-    #print (unique(dfset$variable))
+    print (unique(dfset1$color))
     print ('4')
     #gg <- ggplot(data=dfraw[!is.na(dfraw$value),], aes(x=displacement,y=value,color=homopolymer))
-    gg <- ggplot(data=dfset1, aes(x=displacement,y=value,color=hbcolor))
+    gg <- ggplot(data=dfset1[!is.na(dfset1$value),], aes(x=displacement,y=value,color=hbcolor))
     #gg <- gg + geom_line(size=0.6, ) + scale_color_manual(values=c("brown","black","darkgreen","red","blue","darkorange","azure4"))
     gg <- gg + geom_line(size=0.6, ) + scale_color_manual(values=c("blue","red","green"))
 
     gg <- gg + facet_wrap(~polymer,ncol=1) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + theme (strip.text.x = element_text(size = 7),axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-    gg <- gg + guides(colour = guide_legend(override.aes = list(size=10)))
+    gg <- gg + guides(colour = guide_legend(override.aes = list(size=5)))
     gg <- gg + ylab("hbcount")
     ggsave(filename = paste0(outapp,'unbiased.pdf'),gg, height = 8, width= 3)
 
@@ -104,15 +107,16 @@ plotallad <- function(df,extractele,outapp) {
     c51='lightgreen'
     c6='purple'
     c61='cyan'
-    gg <- ggplot(data=dfset2, aes(x=displacement,y=value,color=category))
+    print (unique(dfset2$category))
+    gg <- ggplot(data=dfset2[!is.na(dfset2$value),], aes(x=displacement,y=value,color=category))
     #gg <- gg + geom_line(size=0.6, ) + scale_color_manual(values=c("brown","black","darkgreen","red","blue","darkorange","azure4"))
-    gg <- gg + geom_point(size=0.4,) 
+    gg <- gg + geom_line(size=0.4,) 
     #gg <- gg + scale_linetype_manual(values=c(d1,d2,d1,d2,d1,d2,d1,d2,d1,d2,d1,d2))
     gg <- gg + scale_color_manual(values=c(c1,c11,c2,c21,c3,c31,c1,c11,c2,c21,c3,c31))
     gg <- gg + facet_wrap(~polymer,ncol=1) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + theme (strip.text.x = element_text(size = 7),axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-    gg <- gg + guides(colour = guide_legend(override.aes = list(size=10)))
+    #gg <- gg + guides(colour = guide_legend(override.aes = list(size=5)))
     gg <- gg + ylab("hbcount")
     ggsave(filename = paste0(outapp,'biased.pdf'),gg, height = 8, width= 3)
 
@@ -131,8 +135,10 @@ plotcombined <- function(df,extractele,outapp) {
                 ifelse(grepl('allmcsc',df$category), 'allmcsc', 'unknown'
                 ))))))
     dfset=df[(df$keeps=='keep'),]
+    dfset=dfset[!(dfset$variable=='for-dispav'),]
+    #the above can be removed to add thin layout to force in bacground
 
-    dfset=dfset[(dfset$avtype=='ra20'),]
+    dfset=dfset[(dfset$avtype=='dispav'),]
     print ('2')
     dfset$hbnature<- ifelse(grepl('p1',dfset$variable), 'partial',
                    ifelse(grepl('p2',dfset$variable), 'partial',   'unbiased'))
@@ -140,12 +146,12 @@ plotcombined <- function(df,extractele,outapp) {
     dfset2=dfset[(dfset$hbnature=='partial'),]
     dfset1=dfset[(dfset$hbnature=='unbiased'),]
     print ('4')
-    gg <- ggplot(data=dfset1, aes(x=displacement,y=value,color=hbcolor))
+    gg <- ggplot(data=dfset1[!is.na(dfset1$value),], aes(x=displacement,y=value,color=hbcolor))
     gg <- gg + geom_line(size=0.6,alpha=0.5 ) + scale_color_manual(values=c("black","darkgreen","blue","gray","green","lightblue"))
     gg <- gg + facet_wrap(~polymer,ncol=1) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + theme (strip.text.x = element_text(size = 7),axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-    gg <- gg + guides(colour = guide_legend(override.aes = list(size=10)))
+    gg <- gg + guides(colour = guide_legend(override.aes = list(size=5)))
     gg <- gg + ylab("hbcount")
     ggsave(filename = paste0(outapp,'unbiased.pdf'),gg, height = 8, width= 3)
     }
