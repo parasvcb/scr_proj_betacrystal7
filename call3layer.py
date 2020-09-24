@@ -177,7 +177,7 @@ print(4)
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
-#tdirhball = os.path.join(processingdir, 'hbonds_all')
+# tdirhball = os.path.join(processingdir, 'hbonds_all')
 tdirhball = os.path.join(processingdir, 'hbonds_nonadj')
 tdirhbadj = os.path.join(processingdir, 'hbonds_adjacent')
 mdpro.makedir(tdirhball)
@@ -189,10 +189,27 @@ if not (len(os.listdir(tdirhball)) > 1000 and len(os.listdir(tdirhbadj)) > 1000)
 if not mdcom.checkFiles(['com_gcm_pull.log'], directory=processingdir):
     mdcom.com_calc(psf, dcdpull, centerofmasstclscript, processingdir)
 
+print(poltype, reptype)
+print(peak1[0], 'before')
+cuttoff = 0.6
+# if poltype == "polyglycine" and 0:
+#     print('in', 1)
+#     floatdigit = len(str(peak1[0]).split('.')[-1])
+#     # print(peak1[0], floatdigit)
+#     peak1[0] = round(peak1[0] - 1, floatdigit)
+#     # print(peak1[0])
+# if poltype == 'polyglycine':
+#     cuttoff = 0.5
+#     print('in', 2)
+# print(peak1[0], 'after')
 hbondData = mdpro.hbonds_calculator3layer(
-    processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint)
+    processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint, cuttofffrommain=cuttoff)
+# hbondData = mdpro.hbonds_calculator3layer(
+#     processingdir, distC, peak1[0], down1[0], peak2[0], dispint=dispint)
+
 # print(hbondData.keys())
 # sys.exit()
+'''
 {'all_mcmc_raw' 'all_mcsc_raw' 'all_scsc_raw'
  'all_mcmc_ra20' 'all_mcsc_ra20' 'all_scsc_ra20'
  'all_mcmc_dispav' 'all_mcsc_dispav' 'all_scsc_dispav'
@@ -370,11 +387,11 @@ df['hbadjp2mcscstab-dispav'] = df['displacement'].map(
 df['com1-dispav'] = df['displacement'].map(com1_dispav)
 df['com2-dispav'] = df['displacement'].map(com2_dispav)
 df['com3-dispav'] = df['displacement'].map(com3_dispav)
-#df['for-dispav'] = df['displacement'].map(forcedispav)
+# df['for-dispav'] = df['displacement'].map(forcedispav)
 
 df.to_csv(os.path.join(outfile, "dataframe_vnew2.tsv"), index=False, sep='\t')
 # sys.exit()
-
+'''
 
 allp1hb_mcmc = {peak1[0]: hbondData['all_mcmc_dispav'][peak1[0]]}
 allp1hb_mcsc = {peak1[0]: hbondData['all_mcsc_dispav'][peak1[0]]}

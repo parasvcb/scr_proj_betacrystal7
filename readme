@@ -27,16 +27,18 @@ rsync -av --include="*/" --include="wowaterpulling.dcd" --exclude="*" tyroneR:/h
 
 programming fasters
 import os, subprocess,re
-
+deleted=['polyala_constrained','polygly_constrained','polyisoleucine_server191','polyisoleucine_78','polyisoleucine_turing']
 parent = "../"
 parent = "../"
 for i in os.listdir(parent):
 	if i in ["menton_set", "tyroneP_set", "tyrone_set3"]:
 		for j in os.listdir(os.path.join(parent,i)):
-			if re.match(r'poly[a-z]+',j):
+			if re.match(r'poly[a-z]+',j):# and j not in deleted:
 				subprocess.check_call(['python','call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j)])
+subprocess.check_call(['python','cumulative_df.py',parent,parent])
+subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
         
-        
+
 #above will compute the dfs
 
 python cumulative_df.py ../ ../out
@@ -64,3 +66,13 @@ Rscript plottingHelpLine.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
 
 
 
+python call3layer.py ../menton_set/polyglycine/ ../menton_set/polyglycine/
+python call3layer.py ../tyroneP_set/polyglycine/ ../tyroneP_set/polyglycine/
+python call3layer.py ../tyrone_set3/polyglycine/ ../tyrone_set3/polyglycine/
+
+python call3layer.py ../menton_set/polyala-gly/ ../menton_set/polyala-gly/
+python call3layer.py ../tyroneP_set/polyala-gly/ ../tyroneP_set/polyala-gly/
+python call3layer.py ../tyrone_set3/polyala-gly/ ../tyrone_set3/polyala-gly/
+
+python cumulative_df.py ../ ../data_tsv/out
+Rscript barplot_hbatpeaks.R

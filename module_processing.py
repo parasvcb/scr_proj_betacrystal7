@@ -6,6 +6,7 @@ import numpy as np
 from progress.bar import Bar
 from scipy.spatial import distance as scdist
 import subprocess
+from collections import Counter
 
 
 def movefile(source, destination):
@@ -56,7 +57,7 @@ def toughness(has, toughnessDistance, crysvol):
     return raw, avgframe_ra20, avgframe_ra250, {'ra20': (areacompra20, area1stra20, area2aagenra20)}
     '''
     def return_jm3(pnm_forceDist, vol_ang3):
-        #print ('force:%s,vol:%s'%(pnm_forceDist,vol_ang3))
+        # print ('force:%s,vol:%s'%(pnm_forceDist,vol_ang3))
         # will return in Mega joules
         return (((pnm_forceDist*1e-22) / (vol_ang3*1e-30))*1e-6)
     tkeys = list(has.keys())
@@ -75,6 +76,21 @@ def toughness(has, toughnessDistance, crysvol):
         i[1] for i in xy if i[0] <= 7.6])
 
     return (return_jm3(areall, crysvol), return_jm3(area1stpeak, crysvol), return_jm3(area2aagen, crysvol))
+
+
+def angleaverages(filename, dis):
+    # this will feed in the H bond data from file to hash
+    with open(filename) as fin:
+        lis = []
+        for i in fin.read().split('\n')[1:]:
+            if len(i) > 0:
+                ele = i.split()
+                frame = int(ele[0])
+                angle = float(ele[2])
+                lis += [(frame, angle)]
+        raw = {i[0]: i[1] for i in lis[:8000]}
+    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
+    return raw, avgframe_ra20, avgframe_ra250
 
 
 def dispAvg(distC, varible, dispint=1):
@@ -175,12 +191,12 @@ def forcedistance(dirsim):
     distance = []
     force = []
     for i in data[:8000]:
-        distance += [float(i[0])*float(dirx)+float(i[1]) *
-                     float(diry)+float(i[2])*float(dirz)]
-        force += [float(i[3])*float(dirx)+float(i[4]) *
-                  float(diry)+float(i[5])*float(dirz)]
+        distance += [float(i[0]) * float(dirx) + float(i[1]) *
+                     float(diry) + float(i[2]) * float(dirz)]
+        force += [float(i[3]) * float(dirx) + float(i[4]) *
+                  float(diry) + float(i[5]) * float(dirz)]
 
-    distC = {i: val-distance[0] for i, val in enumerate(distance)}
+    distC = {i: val - distance[0] for i, val in enumerate(distance)}
     forceC = {i: val for i, val in enumerate(force)}
     return distC, forceC
 
@@ -223,8 +239,69 @@ def hbondaverages(filename, dis, dispint):
     return raw, avgframe_ra20, avgframe_ra250
 
 
-def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1, maxd=22):
+def writehbhastocsv(has, filename):
+    binshas = {(0, 0.1): [], (0.1, 0.2): [], (0.2, 0.3): [], (0.3, 0.4): [], (0.4, 0.5): [
+    ], (0.5, 0.6): [], (0.6, 0.7): [], (0.7, 0.8): [], (0.9, 1.0): [], (1.0, 1.1): []}
+    hascustom = {'Main_Main': {}, 'Main_Side': {}, 'Side_Side': {}}
+    hascustom['Main_Main'] = {i: 0 for i in binshas}
+    hascustom['Main_Side'] = {i: 0 for i in binshas}
+    hascustom['Side_Side'] = {i: 0 for i in binshas}
+    with open(filename + '_occurence.tsv', 'w') as fout:
+        fout.write('hbtype\tatoms\toccurence\n')
+        if has and len(has) > 0:
+            for i in has:
+                identity = i[0]
+                value = has[i]
+                accdon = "_".join(i[2])
+                hbtype = "_".join(i[1])
+                fout.write('%s\t%s\t%s\n' % (hbtype, accdon, value))
+                for j in binshas:
+                    if j[0] <= value < j[1]:
+                        binshas[j] += [(accdon, i[1], i[0])]
+                        hascustom[hbtype][j] += 1
+                        break
+        else:
+            fout.write('Main_Main\tNULL_NULL\0.0\n')
+
+    keys = list(binshas.keys())
+    keys.sort()
+    with open(filename + '_occurence_definedbins.tsv', 'w') as fout:
+        fout.write('Bins\thbtype\tvalues\tFrequencyClass\tFrequencyTotal\n')
+        def getdiv(numerator, denominator): return round(
+            numerator / denominator, 2) if numerator > 0 and denominator > 0 else 0
+        totalSum = sum([sum(hascustom[i].values()) for i in hascustom])
+        for hbtype in hascustom:
+            classSum = sum(hascustom[hbtype].values())
+            for bins in keys:
+                binval = hascustom[hbtype][bins]
+                fout.write("%s\t%s\t%s\t%s\t%s\n" % ("_".join(map(str, bins)), hbtype, binval, getdiv(
+                    binval, classSum), getdiv(binval, totalSum)))
+
+    with open(filename + '_atomdetailed.log', 'w') as fout:
+        fout.write('Hbtype\ttotalBonds\n')
+        for hbtype in hascustom:
+            classSum = sum(hascustom[hbtype].values())
+            fout.write("%s\t%s\n" % (hbtype, classSum))
+
+        fout.write('\nOcc_range\tatomshbtype\thbtype\thb_identity\n')
+        for i in keys:
+            sorteditems = binshas[i]
+            # print(sorteditems)
+            sorteditems = sorted(sorteditems, key=lambda x: x[1])
+            # print(sorteditems)
+            for j in sorteditems:
+                hbtype = "_".join(j[1])
+                fout.write('%s\t%s\t%s\t%s\n' %
+                           ("_".join(map(str, i)), j[0], hbtype, " : ".join(j[-1])))
+            fout.write('\n')
+
+
+def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, plot=True, mind=-1, maxd=22):
+    '''
+    Lets see how i have deisgned this progrAM
+    '''
     def refine_atomtype(key_hbatom, typebond):
+        # this function will get called only if, theres going to be OT in one of the atom
         if 'OT' in key_hbatom[0] and 'OT' in key_hbatom[1]:
             typebond = ['Main', 'Main']
         elif 'OT' in key_hbatom[0]:
@@ -233,120 +310,139 @@ def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1, maxd=2
             typebond[1] = 'Main'
         return typebond
 
-    def stoch_stable_hunter(stoch, stab, framewise, framerange):
+    def firstsetocalculations(filerange, directory):
+        hbhas = {}
+        framewise = {}
+        raw_mcmc = {}
+        raw_mcsc = {}
+        raw_scsc = {}
+        # SegCP1-ASN2-Main-N 	 SegBP1-ASN7-Side-OT1 	 100.00%
+        # print(filerange)
+        for fil in filerange:
+            frame = int(fil.split('.')[0])
+            framewise[frame] = []
+            if frame <= 8000:
+                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')                          : 0, ('Side', 'Side'): 0}
+                with open(os.path.join(directory, fil)) as fin:
+                    for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
+                        acc, don, occ = line.split()
+                        # e.g it should be 1000.hbdata
+                        # add condition, if both C,C continue statemnet
+                        # of OT1 or OT2, then add main
+                        accele = acc.split("-")
+                        donele = don.split("-")
+                        typebond = [accele[2], donele[2]]
+                        key_hbatom = [accele[3], donele[3]]
+                        if 'C' in key_hbatom[0] and 'C' in key_hbatom[1]:
+                            continue
+                        if 'OT' in key_hbatom[0] or 'OT' in key_hbatom[1]:
+                            typebond = refine_atomtype(key_hbatom, typebond)
+                        typebond.sort()
+                        typebond = tuple(typebond)
+                        identity = [acc, don]
+                        identity.sort()
+                        identity = tuple(identity)
+                        hbhaskey = (identity, typebond, tuple(key_hbatom))
+                        if hbhaskey not in hbhas:
+                            hbhas[hbhaskey] = [frame]
+                        hbhas[hbhaskey] += [frame]
+                        framewise[frame] += [(identity, typebond)]
+                        hbtemp[typebond] += 1
+
+                raw_mcmc[frame] = hbtemp[('Main', 'Main')]
+                raw_mcsc[frame] = hbtemp[('Main', 'Side')]
+                raw_scsc[frame] = hbtemp[('Side', 'Side')]
+        # print(Counter([len(i) for i in framewise.values()]))
+        # print('framewise above')
+        # sys.exit()
+        # print(Counter([len(i) for i in hbhas.values()]))
+        # print('hbhas above')
+        # # sys.exit()
+        return hbhas, framewise, raw_mcmc, raw_mcsc, raw_scsc
+
+    def stoch_stable_hunter(hbhas, framewise, framerange, cuttoff):
         mcmcstoch_raw = {}
         mcmcstab_raw = {}
         scscstoch_raw = {}
         scscstab_raw = {}
         mcscstoch_raw = {}
         mcscstab_raw = {}
-        #print (len(set(framerange)&set(framewise.keys())), list(set(framerange)&set(framewise.keys()))[:5])
-
-        for frame in set(framerange) & set(framewise.keys()):
+        # print (len(set(framerange)&set(framewise.keys())), list(set(framerange)&set(framewise.keys()))[:5])
+        # creating checkpoint
+        if set(framerange) < set(framewise.keys()):
+            print('passed CK framerange subset of framewise')
+        for frame in framerange:
             templishb = []
-            for i in framewise[frame]:
-                accele = i[0].split("-")
-                donele = i[1].split("-")
-                typebond = [accele[2], donele[2]]
-                key_hbatom = [accele[3], donele[3]]
-                if 'C' in key_hbatom[0] and 'C' in key_hbatom[1]:
-                    continue
-                if 'OT' in key_hbatom[0] or 'OT' in key_hbatom[1]:
-                    typebond = refine_atomtype(key_hbatom, typebond)
-                typebond.sort()
-                templishb += [(list(i), (typebond[0], typebond[1]))]
-            #templishb=[(list(i),(i[0].split('-')[2],i[1].split('-')[2])) for i in framewise[frame]]
-            # print (len(templishb),templishb[:10])
-            # sys.exit()
+            templishb = [(list(hbdata[0]), hbdata[1])
+                         for hbdata in framewise[frame]]
+            # where 0th element is identity tuple and 1st element in tuple of hbtype
+
             mcmc = []
             scsc = []
             mcsc = []
             for hb in templishb:
-
-                hbtemp = hb[0]
-                hbtemp.sort()
+                hb_id = hb[0]
+                hb_id.sort()
                 if hb[1] == ('Main', 'Main'):
-                    mcmc += [tuple(hbtemp)]
+                    mcmc += [tuple(hb_id)]
                 elif hb[1] == ('Side', 'Side'):
-                    scsc += [tuple(hbtemp)]
+                    scsc += [tuple(hb_id)]
                 else:
-                    mcsc += [tuple(hbtemp)]
-            mcmcstoch_raw[frame] = len([i for i in mcmc if i in stoch])
-            mcmcstab_raw[frame] = len([i for i in mcmc if i in stab])
-            scscstoch_raw[frame] = len([i for i in scsc if i in stoch])
-            scscstab_raw[frame] = len([i for i in scsc if i in stab])
-            mcscstoch_raw[frame] = len([i for i in mcsc if i in stoch])
-            mcscstab_raw[frame] = len([i for i in mcsc if i in stab])
+                    mcsc += [tuple(hb_id)]
+            mcmcstoch_raw[frame] = len([i for i in mcmc if (
+                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+            mcmcstab_raw[frame] = len(
+                [i for i in mcmc if i in hbhas and hbhas[i] >= cuttoff])
+            scscstoch_raw[frame] = len([i for i in scsc if (
+                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+            scscstab_raw[frame] = len(
+                [i for i in scsc if i in hbhas and hbhas[i] >= cuttoff])
+            mcscstoch_raw[frame] = len([i for i in mcsc if (
+                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+            mcscstab_raw[frame] = len(
+                [i for i in mcsc if i in hbhas and hbhas[i] >= cuttoff])
+            # the above defined should be modified hence to include data
+            # for frames not captured till peak
+            # The above is modified
+
         return mcmcstoch_raw, mcmcstab_raw, scscstoch_raw, scscstab_raw, mcscstoch_raw, mcscstab_raw
 
     # framerangewillbe a lilst of eligible frames
-    # this will feed in the H bond data from frame file to hash
     filerange = os.listdir(directory) if not framerange \
-        else [str(i)+'.hbdata' for i in framerange]
-    # abvove can be costly step
-    # SegCP1-ASN2-Main-N 	 SegBP1-ASN7-Side-OT1 	 100.00%
-    hbhas = {}
-    framewise = {}
-    raw_mcmc = {}
-    raw_mcsc = {}
-    raw_scsc = {}
-    for fil in filerange:
-        frame = int(fil.split('.')[0])
-        framewise[frame] = []
-        if frame <= 8000:
-            with open(os.path.join(directory, fil)) as fin:
-                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')
-                           : 0, ('Side', 'Side'): 0}
-                for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
-                    acc, don, occ = line.split()
-                    # e.g it should be 1000.hbdata
-                    # add condition, if both C,C continue statemnet
-                    # of OT1 or OT2, then add main
-                    accele = acc.split("-")
-                    donele = don.split("-")
-                    typebond = [accele[2], donele[2]]
-                    key_hbatom = [accele[3], donele[3]]
-                    if 'C' in key_hbatom[0] and 'C' in key_hbatom[1]:
-                        continue
-                    if 'OT' in key_hbatom[0] or 'OT' in key_hbatom[1]:
-                        typebond = refine_atomtype(key_hbatom, typebond)
-                    typebond.sort()
-                    identity = [acc, don]
-                    identity.sort()
-                    identity = tuple(identity)
-                    if identity not in hbhas:
-                        hbhas[identity] = [frame]
-                    hbhas[identity] += [frame]
-                    framewise[frame] += [identity]
-                    hbtemp[tuple(typebond)] += 1
+        else [str(i) + '.hbdata' for i in framerange]
 
-            raw_mcmc[frame] = hbtemp[('Main', 'Main')]
-            raw_mcsc[frame] = hbtemp[('Main', 'Side')]
-            raw_scsc[frame] = hbtemp[('Side', 'Side')]
+    # removed chunk of caluculations to sub () called firstsetocalculations
+    hbhas, framewise, raw_mcmc, raw_mcsc, raw_scsc = firstsetocalculations(
+        filerange, directory)
+    # the above for the p1 and p2 data is limited to the framelist defined
 
     if framerange:
+        # print(framewise)
+        # sys.exit()
         # get in form of stochastic and stable values
-        stochastic_mcmc = {}
-        stable_mcmc = {}
-        stochastic_scsc = {}
-        stable_scsc = {}
-        stochastic_mcsc = {}
-        stable_mcsc = {}
-
-        cuttoff = 0.60
-        stochastic = {}
-        stable = {}
-        for hbond in hbhas:
-            presence = len(set(hbhas[hbond]) & set(framerange))/len(framerange)
-            if presence >= 0.6:
-                stable[hbond] = 0
-            else:
-                stochastic[hbond] = 0
-        #print (len(stable),len(stochastic))
-        # print(stable)
-        #
-        mcmcstoch_raw, mcmcstab_raw, scscstoch_raw, scscstab_raw, mcscstoch_raw, mcscstab_raw = stoch_stable_hunter(
-            stochastic, stable, framewise, framerange)
+        # print(cuttoff, 'cuttoff')
+        hbhasoccurence = {hbond: round(len(set(hbhas[hbond]) & set(
+            framerange)) / len(framerange), 2) for hbond in hbhas}
+        # print(np.histogram(list(hbhasoccurence.values()), bins = np.arange(0, 1.1, 0.1)))
+        # for hbond in hbhas:
+        #     # here i need to think, about gettingthi data to csv
+        #     presence =
+        #     # instead of creating new record, add this to hbhas as new val
+        #     hbhas[hbond] = presence
+        #     # # presence above shoudl be dealth with two frame conditions
+        #     # # one going default to the all frames from start to p1 and second going
+        #     # # so that it can be written to csv file and
+        #     # # second to cropped framerange if any such that default to
+        # # # this process above of calculating presence should be
+        # # dealt such that set framerange should calculate distance less than some cuttoff
+        if plot:
+            filetocsvname = os.path.join(os.path.dirname(
+                os.path.normpath(directory)), os.path.basename(os.path.normpath(directory)))
+            # print(hbhasoccurence)
+            writehbhastocsv(hbhasoccurence, filetocsvname)
+        mcmcstoch_raw, mcmcstab_raw, scscstoch_raw,\
+            scscstab_raw, mcscstoch_raw, mcscstab_raw = stoch_stable_hunter(
+                hbhas, framewise, framerange, cuttoff)
         mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav = compute_averages(
             mcmcstoch_raw, dis, dispint)
         # print (mcmcstoch_ra20)
@@ -399,31 +495,20 @@ def hbondaverages_new(directory, dis, dispint, framerange=False, mind=-1, maxd=2
         return raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav, raw_mcsc, raw_mcsc_ra20, raw_mcscdispav, raw_scsc, raw_scsc_ra20, raw_scscdispav
 
 
-def angleaverages(filename, dis):
-    # this will feed in the H bond data from file to hash
-    with open(filename) as fin:
-        lis = []
-        for i in fin.read().split('\n')[1:]:
-            if len(i) > 0:
-                ele = i.split()
-                frame = int(ele[0])
-                angle = float(ele[2])
-                lis += [(frame, angle)]
-        raw = {i[0]: i[1] for i in lis[:8000]}
-    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
-    return raw, avgframe_ra20, avgframe_ra250
-
-
-def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
-    print(p1, d1, p2, "peaks")
-    #folder_all = os.path.join(dirsim, 'hbonds_all')
+def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint, cuttofffrommain):
+    # print(p1, d1, p2, "peaks")
+    # folder_all = os.path.join(dirsim, 'hbonds_all')
     folder_all = os.path.join(dirsim, 'hbonds_nonadj')
     folder_adj = os.path.join(dirsim, 'hbonds_adjacent')
+
+    # p1 is definately final major chunk of the data we are expecting to discuss,
+    # send framerange to find stoch and stab as different range and extrapltae stable informatyiion to the peak
+
     # above two folders will have the data for H bond types amd per frame files
-    allmcmc, allmcmcra20, allmcmcdispav, allmcsc, allmcscra20, allmcscdispav, allscsc, allscscra20, allscscdispav = \
-        hbondaverages_new(folder_all, dis, dispint, framerange=False)
-    adjmcmc, adjmcmcra20, adjmcmcdispav, adjmcsc, adjmcscra20, adjmcscdispav, adjscsc, adjscscra20, adjscscdispav = \
-        hbondaverages_new(folder_adj, dis, dispint, framerange=False)
+    allmcmc, allmcmcra20, allmcmcdispav, allmcsc, allmcscra20, allmcscdispav, allscsc, allscscra20, allscscdispav = hbondaverages_new(
+        folder_all, dis, dispint, framerange=False)
+    adjmcmc, adjmcmcra20, adjmcmcdispav, adjmcsc, adjmcscra20, adjmcscdispav, adjscsc, adjscscra20, adjscscdispav = hbondaverages_new(
+        folder_adj, dis, dispint, framerange=False)
 
     framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
     framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
@@ -432,7 +517,7 @@ def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
         allp1scscstoch_raw, allp1scscstoch_ra20, allp1scscstochdispav, \
         allp1scscstab_raw, allp1scscstab_ra20, allp1scscstabdispav, \
         allp1mcscstoch_raw, allp1mcscstoch_ra20, allp1mcscstochdispav, \
-        allp1mcscstab_raw, allp1mcscstab_ra20, allp1mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
+        allp1mcscstab_raw, allp1mcscstab_ra20, allp1mcscstabdispav = hbondaverages_new(folder_all, dis, dispint, cuttofffrommain,
                                                                                        framerange=framesrange_first_ascent, maxd=p1)
     # sys.exit()
     adjp1mcmcstoch_raw, adjp1mcmcstoch_ra20, adjp1mcmcstochdispav, \
@@ -440,22 +525,22 @@ def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint):
         adjp1scscstoch_raw, adjp1scscstoch_ra20, adjp1scscstochdispav, \
         adjp1scscstab_raw, adjp1scscstab_ra20, adjp1scscstabdispav, \
         adjp1mcscstoch_raw, adjp1mcscstoch_ra20, adjp1mcscstochdispav, \
-        adjp1mcscstab_raw, adjp1mcscstab_ra20, adjp1mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
+        adjp1mcscstab_raw, adjp1mcscstab_ra20, adjp1mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint, cuttofffrommain,
                                                                                        framerange=framesrange_first_ascent, maxd=p1)
     allp2mcmcstoch_raw, allp2mcmcstoch_ra20, allp2mcmcstochdispav, \
         allp2mcmcstab_raw, allp2mcmcstab_ra20, allp2mcmcstabdispav, \
         allp2scscstoch_raw, allp2scscstoch_ra20, allp2scscstochdispav, \
         allp2scscstab_raw, allp2scscstab_ra20, allp2scscstabdispav, \
         allp2mcscstoch_raw, allp2mcscstoch_ra20, allp2mcscstochdispav, \
-        allp2mcscstab_raw, allp2mcscstab_ra20, allp2mcscstabdispav = hbondaverages_new(folder_all, dis, dispint,
-                                                                                       framerange=framesrange_second_ascent, mind=d1, maxd=p2)
+        allp2mcscstab_raw, allp2mcscstab_ra20, allp2mcscstabdispav = hbondaverages_new(folder_all, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
     adjp2mcmcstoch_raw, adjp2mcmcstoch_ra20, adjp2mcmcstochdispav, \
         adjp2mcmcstab_raw, adjp2mcmcstab_ra20, adjp2mcmcstabdispav, \
         adjp2scscstoch_raw, adjp2scscstoch_ra20, adjp2scscstochdispav, \
         adjp2scscstab_raw, adjp2scscstab_ra20, adjp2scscstabdispav, \
         adjp2mcscstoch_raw, adjp2mcscstoch_ra20, adjp2mcscstochdispav, \
-        adjp2mcscstab_raw, adjp2mcscstab_ra20, adjp2mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint,
-                                                                                       framerange=framesrange_second_ascent, mind=d1, maxd=p2)
+        adjp2mcscstab_raw, adjp2mcscstab_ra20, adjp2mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
 
     has = {'all_mcmc_raw': allmcmc, 'all_mcsc_raw': allmcsc, 'all_scsc_raw': allscsc,
            'all_mcmc_ra20': allmcmcra20, 'all_mcsc_ra20': allmcscra20, 'all_scsc_ra20': allscscra20,
@@ -541,7 +626,7 @@ def centreofmasscalc(filename, dis, dispint):
     com3rd = {i: val-comupsublow3rd[0]
               for i, val in enumerate(comupsublow3rd)}
     com3rd, com3_ra20, com3_dispav = compute_averages(com3rd, dis, dispint)
-    print("com1st", comupsublow1st[0])
-    print("com2nd", comupsublow2nd[0])
-    print("com3rd", comupsublow3rd[0])
+    # print("com1st", comupsublow1st[0])
+    # print("com2nd", comupsublow2nd[0])
+    # print("com3rd", comupsublow3rd[0])
     return com1st, com1_ra20, com1_dispav, com2nd, com2_ra20, com2_dispav, com3rd, com3_ra20, com3_dispav
