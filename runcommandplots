@@ -10,24 +10,50 @@ Rscript vsdisp_force.R ../menton_set/ ../plots/new4sep/
 
 Tweaks and editing main dataset
 
-dffile1="../menton_set/polyglycine/processed/dataframe_vnew2.tsv"
-dffile2="../menton_set/polyalanine_default/processed/dataframe_vnew2.tsv"
-dffile3="../menton_set/polyala-gly/processed/dataframe_vnew2.tsv"
+dffile1="../tyrone_set3/polyglycine/processed/dataframe_vnew2.tsv"
+dffile2="../tyrone_set3/polyalanine_default/processed/dataframe_vnew2.tsv"
+dffile3="../tyrone_set3/polyala-gly/processed/dataframe_vnew2.tsv"
 
 dataforce1=read.csv(dffile1,sep = "\t",check.names = FALSE)
 colnames(dataforce1)[which(names(dataforce1) == "for-ra20")] <- "forcera20"
 colnames(dataforce1)[which(names(dataforce1) == "for-dispav")] <- "forcedispav"
 dataforce1 <- subset(dataforce1, select = c('displacement','forcedispav','forcera20'))
-write.csv(dataforce1,"polyglycine_data.tsv",sep = "\t")
+write.csv(dataforce1,"polyglycine_data_r3.tsv",sep = "\t")
 
 dataforce2=read.csv(dffile2,sep = "\t",check.names = FALSE)
 colnames(dataforce2)[which(names(dataforce2) == "for-ra20")] <- "forcera20"
 colnames(dataforce2)[which(names(dataforce2) == "for-dispav")] <- "forcedispav"
 dataforce2 <- subset(dataforce2, select = c('displacement','forcedispav','forcera20'))
-write.csv(dataforce2,"polyala_data.tsv",sep = "\t")
+write.csv(dataforce2,"polyala_data_r3.tsv",sep = "\t")
 
 dataforce3=read.csv(dffile3,sep = "\t",check.names = FALSE)
 colnames(dataforce3)[which(names(dataforce3) == "for-ra20")] <- "forcera20"
 colnames(dataforce3)[which(names(dataforce3) == "for-dispav")] <- "forcedispav"
 dataforce3 <- subset(dataforce3, select = c('displacement','forcedispav','forcera20'))
-write.csv(dataforce3,"polyalagly_data.tsv",sep = "\t")
+write.csv(dataforce3,"polyalagly_data_r3.tsv",sep = "\t")
+
+
+
+cp ../menton_set/polyalanine_default/logs/force.log alanine/f1.log
+cp ../tyroneP_set/polyalanine_default/logs/force.log alanine/f2.log
+cp ../tyrone_set3/polyalanine_default/logs/force.log alanine/f3.log
+
+cp ../menton_set/polyalanine_default/configurations/force.conf alanine/c1.conf
+cp ../tyroneP_set/polyalanine_default/configurations/force.conf alanine/c2.conf
+cp ../tyrone_set3/polyalanine_default/configurations/force.conf alanine/c3.conf
+
+cp ../menton_set/polyglycine/logs/force.log alanine/f1.log
+cp ../tyroneP_set/polyglycine/logs/force.log alanine/f2.log
+cp ../tyrone_set3/polyglycine/logs/force.log alanine/f3.log
+
+cp ../menton_set/polyglycine/configurations/force.conf alanine/c1.conf
+cp ../tyroneP_set/polyglycine/configurations/force.conf alanine/c2.conf
+cp ../tyrone_set3/polyglycine/configurations/force.conf alanine/c3.conf
+
+cp ../menton_set/polyala-gly/logs/force.log alanine/f1.log
+cp ../tyroneP_set/polyala-gly/logs/force.log alanine/f2.log
+cp ../tyrone_set3/polyala-gly/logs/force.log alanine/f3.log
+
+cp ../menton_set/polyala-gly/configurations/force.conf alanine/c1.conf
+cp ../tyroneP_set/polyala-gly/configurations/force.conf alanine/c2.conf
+cp ../tyrone_set3/polyala-gly/configurations/force.conf alanine/c3.conf

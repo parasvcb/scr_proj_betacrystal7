@@ -239,6 +239,30 @@ def hbondaverages(filename, dis, dispint):
     return raw, avgframe_ra20, avgframe_ra250
 
 
+def getdiv(numerator, denominator, prec): return round(
+    numerator / denominator, prec) if numerator > 0 and denominator > 0 else 0
+
+
+def uniqueHbondasFuncofdisplacement(distC, framewise, filename):
+    listrelevant = [[distC[frame], frame]
+                    for frame in set(distC.keys()) & set(framewise.keys())]
+    listrelevant.sort()
+    allbin = set()
+    # print(list(framewise.values())[1][1])
+    totalhbonds = len(set([j[0] for i in framewise.values() for j in i]))
+    with open(filename + '_uniqueAsDisplacementFunc.tsv', 'w') as fout:
+        fout.write('Frame\tdisplacement\tuniqueBonds\tfracUniqueBonds\n')
+        for value in listrelevant:
+            frame = value[1]
+            hbhas = {hb[0]: hb[1]
+                     for hb in framewise[frame]}
+            # for unique count i need to get
+            uniqueHb = len(set(hbhas.keys())-allbin)
+            allbin |= set(hbhas.keys())
+            frac = getdiv(uniqueHb, totalhbonds, 4)
+            fout.write('%s\t%s\t%s\t%s\n' % (frame, value[0], uniqueHb, frac))
+
+
 def writehbhastocsv(has, filename):
     binshas = {(0, 0.1): [], (0.1, 0.2): [], (0.2, 0.3): [], (0.3, 0.4): [], (0.4, 0.5): [
     ], (0.5, 0.6): [], (0.6, 0.7): [], (0.7, 0.8): [], (0.9, 1.0): [], (1.0, 1.1): []}
@@ -265,17 +289,25 @@ def writehbhastocsv(has, filename):
 
     keys = list(binshas.keys())
     keys.sort()
+    frac3plus = 0
+    frac4plus = 0
     with open(filename + '_occurence_definedbins.tsv', 'w') as fout:
         fout.write('Bins\thbtype\tvalues\tFrequencyClass\tFrequencyTotal\n')
-        def getdiv(numerator, denominator): return round(
-            numerator / denominator, 2) if numerator > 0 and denominator > 0 else 0
         totalSum = sum([sum(hascustom[i].values()) for i in hascustom])
         for hbtype in hascustom:
             classSum = sum(hascustom[hbtype].values())
             for bins in keys:
                 binval = hascustom[hbtype][bins]
+                if bins[1] > 0.3:
+                    frac3plus += getdiv(binval, totalSum, 2)
+                if bins[1] > 0.4:
+                    frac4plus += getdiv(binval, totalSum, 2)
                 fout.write("%s\t%s\t%s\t%s\t%s\n" % ("_".join(map(str, bins)), hbtype, binval, getdiv(
-                    binval, classSum), getdiv(binval, totalSum)))
+                    binval, classSum, 2), getdiv(binval, totalSum, 2)))
+
+    print(os.path.basename(os.path.normpath(filename)))
+    print('frac3plus=%s,frac4plus=%s' %
+          (round(frac3plus, 3), round(frac4plus, 3)))
 
     with open(filename + '_atomdetailed.log', 'w') as fout:
         fout.write('Hbtype\ttotalBonds\n')
@@ -296,7 +328,7 @@ def writehbhastocsv(has, filename):
             fout.write('\n')
 
 
-def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, plot=True, mind=-1, maxd=22):
+def hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, plot=True, mind=-1, maxd=22):
     '''
     Lets see how i have deisgned this progrAM
     '''
@@ -342,11 +374,12 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, pl
                         identity = [acc, don]
                         identity.sort()
                         identity = tuple(identity)
-                        hbhaskey = (identity, typebond, tuple(key_hbatom))
-                        if hbhaskey not in hbhas:
-                            hbhas[hbhaskey] = [frame]
-                        hbhas[hbhaskey] += [frame]
-                        framewise[frame] += [(identity, typebond)]
+                        hbhasKeyAndFramewiseValue = (
+                            identity, typebond, tuple(key_hbatom))
+                        if hbhasKeyAndFramewiseValue not in hbhas:
+                            hbhas[hbhasKeyAndFramewiseValue] = [frame]
+                        hbhas[hbhasKeyAndFramewiseValue] += [frame]
+                        framewise[frame] += [hbhasKeyAndFramewiseValue]
                         hbtemp[typebond] += 1
 
                 raw_mcmc[frame] = hbtemp[('Main', 'Main')]
@@ -360,7 +393,7 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, pl
         # # sys.exit()
         return hbhas, framewise, raw_mcmc, raw_mcsc, raw_scsc
 
-    def stoch_stable_hunter(hbhas, framewise, framerange, cuttoff):
+    def stoch_stable_hunter(hbhasoccurence, framewise, framerange, cuttoff):
         mcmcstoch_raw = {}
         mcmcstab_raw = {}
         scscstoch_raw = {}
@@ -369,38 +402,43 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, pl
         mcscstab_raw = {}
         # print (len(set(framerange)&set(framewise.keys())), list(set(framerange)&set(framewise.keys()))[:5])
         # creating checkpoint
-        if set(framerange) < set(framewise.keys()):
-            print('passed CK framerange subset of framewise')
+        # if set(framerange) == set(framewise.keys()):
+        #     print('passed CK framerange equal to framewise')
+        # hbhasoccurence key has (identity, typebond, tuple(key_hbatom)) as key
+        # and frameiwse will have them as value elemnet
         for frame in framerange:
             templishb = []
-            templishb = [(list(hbdata[0]), hbdata[1])
-                         for hbdata in framewise[frame]]
+            templishb = list(framewise[frame])
+            # they will cross refer to hbhasoccirce keys
             # where 0th element is identity tuple and 1st element in tuple of hbtype
 
             mcmc = []
             scsc = []
             mcsc = []
             for hb in templishb:
-                hb_id = hb[0]
-                hb_id.sort()
                 if hb[1] == ('Main', 'Main'):
-                    mcmc += [tuple(hb_id)]
+                    mcmc += [hb]
                 elif hb[1] == ('Side', 'Side'):
-                    scsc += [tuple(hb_id)]
+                    scsc += [hb]
                 else:
-                    mcsc += [tuple(hb_id)]
+                    mcsc += [hb]
+            # print(cuttoff)
+            # print([hbhasoccurence[i] for i in mcmc if i in hbhasoccurence])
             mcmcstoch_raw[frame] = len([i for i in mcmc if (
-                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+                i not in hbhasoccurence or (i in hbhasoccurence and hbhasoccurence[i] < cuttoff))])
+            # print(mcmcstoch_raw[frame])
             mcmcstab_raw[frame] = len(
-                [i for i in mcmc if i in hbhas and hbhas[i] >= cuttoff])
+                [i for i in mcmc if i in hbhasoccurence and hbhasoccurence[i] >= cuttoff])
+            # print(mcmcstab_raw[frame])
             scscstoch_raw[frame] = len([i for i in scsc if (
-                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+                i not in hbhasoccurence or (i in hbhasoccurence and hbhasoccurence[i] < cuttoff))])
             scscstab_raw[frame] = len(
-                [i for i in scsc if i in hbhas and hbhas[i] >= cuttoff])
+                [i for i in scsc if i in hbhasoccurence and hbhasoccurence[i] >= cuttoff])
             mcscstoch_raw[frame] = len([i for i in mcsc if (
-                i not in hbhas or (i in hbhas and hbhas[i] < cuttoff))])
+                i not in hbhasoccurence or (i in hbhasoccurence and hbhasoccurence[i] < cuttoff))])
             mcscstab_raw[frame] = len(
-                [i for i in mcsc if i in hbhas and hbhas[i] >= cuttoff])
+                [i for i in mcsc if i in hbhasoccurence and hbhasoccurence[i] >= cuttoff])
+            # break
             # the above defined should be modified hence to include data
             # for frames not captured till peak
             # The above is modified
@@ -440,9 +478,10 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.6, framerange=False, pl
                 os.path.normpath(directory)), os.path.basename(os.path.normpath(directory)))
             # print(hbhasoccurence)
             writehbhastocsv(hbhasoccurence, filetocsvname)
+            uniqueHbondasFuncofdisplacement(dis, framewise, filetocsvname)
         mcmcstoch_raw, mcmcstab_raw, scscstoch_raw,\
             scscstab_raw, mcscstoch_raw, mcscstab_raw = stoch_stable_hunter(
-                hbhas, framewise, framerange, cuttoff)
+                hbhasoccurence, framewise, framerange, cuttoff)
         mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav = compute_averages(
             mcmcstoch_raw, dis, dispint)
         # print (mcmcstoch_ra20)

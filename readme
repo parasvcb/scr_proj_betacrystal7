@@ -35,6 +35,8 @@ for i in os.listdir(parent):
 		for j in os.listdir(os.path.join(parent,i)):
 			if re.match(r'poly[a-z]+',j):# and j not in deleted:
 				subprocess.check_call(['python','call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j)])
+				break
+		break
 subprocess.check_call(['python','cumulative_df.py',parent,os.path.join(parent,'data_tsv','out')])
 subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
         

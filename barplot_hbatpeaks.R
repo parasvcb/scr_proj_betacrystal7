@@ -92,7 +92,7 @@ gg <- gg + xlab("Polymer")
 gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
 ggsave(filename = paste(outputfile,'_','segregated_plot.pdf'))
 }
-plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_default")
+plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_defaultall_cutt0.4all")
 
 #plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_all_cutt0.6all")
 #plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_onlyglycine_cutt0.6all")

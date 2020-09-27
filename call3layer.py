@@ -68,7 +68,6 @@ for i in os.listdir(dirsim):
         print("moved", source)
 # general cleanup of main sim dir
 
-print(1)
 centerofmasstclscript = "/home/paras/bin/centerofmassgeom.tcl"
 catdcd = "$HOME/bin/catdcd"
 waterpsf = os.path.join(dirsim, 'before_mini', "ionized.psf")
@@ -112,7 +111,6 @@ if not os.path.isfile(dcdpull):
         waterpsf, waterpdb, waterdcdpull, dcdpull, catdcd, processingdir)
 
 
-print(2)
 # sys.exit()
 if not os.path.isfile(os.path.join(processingdir, "dimensions.tsv")):
     rawdim = mdcom.nanocrystal_dimensions(
@@ -172,8 +170,6 @@ if not (os.path.isfile(os.path.join(processingdir, "toughness.tsv"))):
 # sys.exit()
 framestravelled = mdpro.framestravelled(distC, dispint=0.5)
 
-print(4)
-
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
@@ -190,14 +186,13 @@ if not mdcom.checkFiles(['com_gcm_pull.log'], directory=processingdir):
     mdcom.com_calc(psf, dcdpull, centerofmasstclscript, processingdir)
 
 print(poltype, reptype)
-print(peak1[0], 'before')
-cuttoff = 0.6
-# if poltype == "polyglycine" and 0:
-#     print('in', 1)
-#     floatdigit = len(str(peak1[0]).split('.')[-1])
-#     # print(peak1[0], floatdigit)
-#     peak1[0] = round(peak1[0] - 1, floatdigit)
-#     # print(peak1[0])
+# print(peak1[0], 'before')
+cuttoff = 0.4
+if poltype == "polyglycine" and 0:
+    floatdigit = len(str(peak1[0]).split('.')[-1])
+    # print(peak1[0], floatdigit)
+    peak1[0] = round(peak1[0] - 0.5, floatdigit)
+    # print(peak1[0])
 # if poltype == 'polyglycine':
 #     cuttoff = 0.5
 #     print('in', 2)
@@ -407,7 +402,7 @@ adjp2hb_mcmc = {peak2[0]: hbondData['adj_mcmc_dispav'][peak2[0]]}
 adjp2hb_mcsc = {peak2[0]: hbondData['adj_mcsc_dispav'][peak2[0]]}
 adjp2hb_scsc = {peak2[0]: hbondData['adj_scsc_dispav'][peak2[0]]}
 
-print(hbondData['allp1mcmcstochdispav'])
+# print(hbondData['allp1mcmcstochdispav'])
 allp1stochhbmcmc = {peak1[0]: hbondData['allp1mcmcstochdispav'][peak1[0]]}
 allp1stochhbmcsc = {peak1[0]: hbondData['allp1mcscstochdispav'][peak1[0]]}
 allp1stochhbscsc = {peak1[0]: hbondData['allp1scscstochdispav'][peak1[0]]}
