@@ -234,28 +234,26 @@ def energy_calc_1layer(psf, pdb, dcd, output, pulling=True):
         print("ERROR temppullInt-->>", psf, pdb, output)
 
 
-def hbonds_calculator3layer(psf, dcd, outfile):
+def hbonds_calculator3layer(psf, dcd, outfile, mode):
+    hbgroup = {'hball': '[atomselect top "protein and not chain C"]',
+               'hbnad': '[atomselect top "protein and not chain C B D"]',
+               'hbadj': '[atomselect top "chain B D"]'}
     script = '''
         package require hbonds
         mol load psf %s dcd %s
         set g1 [atomselect top "chain C"]
-        #set g2 [atomselect top "protein and not chain C"]
-        set g2 [atomselect top "protein and not chain C B D"]
-        set g3 [atomselect top "chain B D"]
-        
+        set g2 %s
+
         set mol [molinfo top]
         set nf [molinfo $mol get numframes]
     
         for {set i 0} {$i < $nf} {incr i} {
         $g1 frame $i
         $g2 frame $i
-        $g3 frame $i
-
-        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_nonadj/$i.hbdata
-        hbonds -sel1 $g1 -sel2 $g3 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/hbonds_adjacent/$i.hbdata
+        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout %s/$i.hbdata
         }
         exit
-        ''' % (psf, dcd, outfile, outfile)
+        ''' % (psf, dcd, hbgroup[mode], outfile)
     if os.path.isfile('hbonds.dat'):
         os.remove('hbonds.dat')
     res = callscript(script)

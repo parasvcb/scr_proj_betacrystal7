@@ -534,54 +534,87 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, pl
         return raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav, raw_mcsc, raw_mcsc_ra20, raw_mcscdispav, raw_scsc, raw_scsc_ra20, raw_scscdispav
 
 
-def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cuttofffrommain):
+def hbonds_calculator3layer(dirsim, dis, p1, d1, p2, dispint, cuttofffrommain):
     # print(p1, d1, p2, "peaks")
     # folder_all = os.path.join(dirsim, 'hbonds_all')
+    folder_all = os.path.join(dirsim, 'hbonds_nonadj')
+    folder_adj = os.path.join(dirsim, 'hbonds_adjacent')
 
     # p1 is definately final major chunk of the data we are expecting to discuss,
     # send framerange to find stoch and stab as different range and extrapltae stable informatyiion to the peak
 
     # above two folders will have the data for H bond types amd per frame files
-    mcmc, mcmcra20, mcmcdispav, mcsc, mcscra20, mcscdispav, scsc, scscra20, scscdispav = hbondaverages_new(
-        dirsim, dis, dispint, framerange=False)
+    allmcmc, allmcmcra20, allmcmcdispav, allmcsc, allmcscra20, allmcscdispav, allscsc, allscscra20, allscscdispav = hbondaverages_new(
+        folder_all, dis, dispint, framerange=False)
+    adjmcmc, adjmcmcra20, adjmcmcdispav, adjmcsc, adjmcscra20, adjmcscdispav, adjscsc, adjscscra20, adjscscdispav = hbondaverages_new(
+        folder_adj, dis, dispint, framerange=False)
 
     framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
     framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
-    p1mcmcstoch_raw, p1mcmcstoch_ra20, p1mcmcstochdispav, \
-        p1mcmcstab_raw, p1mcmcstab_ra20, p1mcmcstabdispav, \
-        p1scscstoch_raw, p1scscstoch_ra20, p1scscstochdispav, \
-        p1scscstab_raw, p1scscstab_ra20, p1scscstabdispav, \
-        p1mcscstoch_raw, p1mcscstoch_ra20, p1mcscstochdispav, \
-        p1mcscstab_raw, p1mcscstab_ra20, p1mcscstabdispav = hbondaverages_new(dirsim, dis, dispint, cuttofffrommain,
-                                                                              framerange=framesrange_first_ascent, maxd=p1)
+    allp1mcmcstoch_raw, allp1mcmcstoch_ra20, allp1mcmcstochdispav, \
+        allp1mcmcstab_raw, allp1mcmcstab_ra20, allp1mcmcstabdispav, \
+        allp1scscstoch_raw, allp1scscstoch_ra20, allp1scscstochdispav, \
+        allp1scscstab_raw, allp1scscstab_ra20, allp1scscstabdispav, \
+        allp1mcscstoch_raw, allp1mcscstoch_ra20, allp1mcscstochdispav, \
+        allp1mcscstab_raw, allp1mcscstab_ra20, allp1mcscstabdispav = hbondaverages_new(folder_all, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_first_ascent, maxd=p1)
     # sys.exit()
-    p2mcmcstoch_raw, p2mcmcstoch_ra20, p2mcmcstochdispav, \
-        p2mcmcstab_raw, p2mcmcstab_ra20, p2mcmcstabdispav, \
-        p2scscstoch_raw, p2scscstoch_ra20, p2scscstochdispav, \
-        p2scscstab_raw, p2scscstab_ra20, p2scscstabdispav, \
-        p2mcscstoch_raw, p2mcscstoch_ra20, p2mcscstochdispav, \
-        p2mcscstab_raw, p2mcscstab_ra20, p2mcscstabdispav = hbondaverages_new(dirsim, dis, dispint, cuttofffrommain,
-                                                                              framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
+    adjp1mcmcstoch_raw, adjp1mcmcstoch_ra20, adjp1mcmcstochdispav, \
+        adjp1mcmcstab_raw, adjp1mcmcstab_ra20, adjp1mcmcstabdispav, \
+        adjp1scscstoch_raw, adjp1scscstoch_ra20, adjp1scscstochdispav, \
+        adjp1scscstab_raw, adjp1scscstab_ra20, adjp1scscstabdispav, \
+        adjp1mcscstoch_raw, adjp1mcscstoch_ra20, adjp1mcscstochdispav, \
+        adjp1mcscstab_raw, adjp1mcscstab_ra20, adjp1mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_first_ascent, maxd=p1)
+    allp2mcmcstoch_raw, allp2mcmcstoch_ra20, allp2mcmcstochdispav, \
+        allp2mcmcstab_raw, allp2mcmcstab_ra20, allp2mcmcstabdispav, \
+        allp2scscstoch_raw, allp2scscstoch_ra20, allp2scscstochdispav, \
+        allp2scscstab_raw, allp2scscstab_ra20, allp2scscstabdispav, \
+        allp2mcscstoch_raw, allp2mcscstoch_ra20, allp2mcscstochdispav, \
+        allp2mcscstab_raw, allp2mcscstab_ra20, allp2mcscstabdispav = hbondaverages_new(folder_all, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
+    adjp2mcmcstoch_raw, adjp2mcmcstoch_ra20, adjp2mcmcstochdispav, \
+        adjp2mcmcstab_raw, adjp2mcmcstab_ra20, adjp2mcmcstabdispav, \
+        adjp2scscstoch_raw, adjp2scscstoch_ra20, adjp2scscstochdispav, \
+        adjp2scscstab_raw, adjp2scscstab_ra20, adjp2scscstabdispav, \
+        adjp2mcscstoch_raw, adjp2mcscstoch_ra20, adjp2mcscstochdispav, \
+        adjp2mcscstab_raw, adjp2mcscstab_ra20, adjp2mcscstabdispav = hbondaverages_new(folder_adj, dis, dispint, cuttofffrommain,
+                                                                                       framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
 
-    has = {appendhbtype + 'mcmc-raw': mcmc, appendhbtype + 'mcsc-raw': mcsc, appendhbtype + 'scsc-raw': scsc,
-           appendhbtype + 'mcmc-ra20': mcmcra20, appendhbtype + 'mcsc-ra20': mcscra20, appendhbtype + 'scsc-ra20': scscra20,
-           appendhbtype + 'mcmc-dispav': mcmcdispav, appendhbtype + 'mcsc-dispav': mcscdispav, appendhbtype + 'scsc-dispav': scscdispav,
+    has = {'all_mcmc_raw': allmcmc, 'all_mcsc_raw': allmcsc, 'all_scsc_raw': allscsc,
+           'all_mcmc_ra20': allmcmcra20, 'all_mcsc_ra20': allmcscra20, 'all_scsc_ra20': allscscra20,
+           'all_mcmc_dispav': allmcmcdispav, 'all_mcsc_dispav': allmcscdispav, 'all_scsc_dispav': allscscdispav,
+           'adj_mcmc_raw': adjmcmc, 'adj_mcsc_raw': adjmcsc, 'adj_scsc_raw': adjscsc,
+           'adj_mcmc_ra20': adjmcmcra20, 'adj_mcsc_ra20': adjmcscra20, 'adj_scsc_ra20': adjscscra20,
+           'adj_mcmc_dispav': adjmcmcdispav, 'adj_mcsc_dispav': adjmcscdispav, 'adj_scsc_dispav': adjscscdispav,
 
-           appendhbtype + 'p1mcmcstoch-raw': p1mcmcstoch_raw, appendhbtype + 'p1mcscstoch-raw': p1mcscstoch_raw, appendhbtype + 'p1scscstoch-raw': p1scscstoch_raw,
-           appendhbtype + 'p1mcmcstoch-ra20': p1mcmcstoch_ra20, appendhbtype + 'p1mcscstoch-ra20': p1mcscstoch_ra20, appendhbtype + 'p1scscstoch-ra20': p1scscstoch_ra20,
-           appendhbtype + 'p1mcmcstoch-dispav': p1mcmcstochdispav, appendhbtype + 'p1mcscstoch-dispav': p1mcscstochdispav, appendhbtype + 'p1scscstoch-dispav': p1scscstochdispav,
+           'allp1mcmcstochraw': allp1mcmcstoch_raw, 'allp1mcscstochraw': allp1mcscstoch_raw, 'allp1scscstochraw': allp1scscstoch_raw,
+           'allp1mcmcstochra20': allp1mcmcstoch_ra20, 'allp1mcscstochra20': allp1mcscstoch_ra20, 'allp1scscstochra20': allp1scscstoch_ra20,
+           'allp1mcmcstochdispav': allp1mcmcstochdispav, 'allp1mcscstochdispav': allp1mcscstochdispav, 'allp1scscstochdispav': allp1scscstochdispav,
+           'adjp1mcmcstochraw': adjp1mcmcstoch_raw, 'adjp1mcscstochraw': adjp1mcscstoch_raw, 'adjp1scscstochraw': adjp1scscstoch_raw,
+           'adjp1mcmcstochra20': adjp1mcmcstoch_ra20, 'adjp1mcscstochra20': adjp1mcscstoch_ra20, 'adjp1scscstochra20': adjp1scscstoch_ra20,
+           'adjp1mcmcstochdispav': adjp1mcmcstochdispav, 'adjp1mcscstochdispav': adjp1mcscstochdispav, 'adjp1scscstochdispav': adjp1scscstochdispav,
 
-           appendhbtype + 'p1mcmcstab-raw': p1mcmcstab_raw, appendhbtype + 'p1mcscstab-raw': p1mcscstab_raw, appendhbtype + 'p1scscstab-raw': p1scscstab_raw,
-           appendhbtype + 'p1mcmcstab-ra20': p1mcmcstab_ra20, appendhbtype + 'p1mcscstab-ra20': p1mcscstab_ra20, appendhbtype + 'p1scscstab-ra20': p1scscstab_ra20,
-           appendhbtype + 'p1mcmcstab-dispav': p1mcmcstabdispav, appendhbtype + 'p1mcscstab-dispav': p1mcscstabdispav, appendhbtype + 'p1scscstab-dispav': p1scscstabdispav,
+           'allp1mcmcstabraw': allp1mcmcstab_raw, 'allp1mcscstabraw': allp1mcscstab_raw, 'allp1scscstabraw': allp1scscstab_raw,
+           'allp1mcmcstabra20': allp1mcmcstab_ra20, 'allp1mcscstabra20': allp1mcscstab_ra20, 'allp1scscstabra20': allp1scscstab_ra20,
+           'allp1mcmcstabdispav': allp1mcmcstabdispav, 'allp1mcscstabdispav': allp1mcscstabdispav, 'allp1scscstabdispav': allp1scscstabdispav,
+           'adjp1mcmcstabraw': adjp1mcmcstab_raw, 'adjp1mcscstabraw': adjp1mcscstab_raw, 'adjp1scscstabraw': adjp1scscstab_raw,
+           'adjp1mcmcstabra20': adjp1mcmcstab_ra20, 'adjp1mcscstabra20': adjp1mcscstab_ra20, 'adjp1scscstabra20': adjp1scscstab_ra20,
+           'adjp1mcmcstabdispav': adjp1mcmcstabdispav, 'adjp1mcscstabdispav': adjp1mcscstabdispav, 'adjp1scscstabdispav': adjp1scscstabdispav,
 
-           appendhbtype + 'p2mcmcstoch-raw': p2mcmcstoch_raw, appendhbtype + 'p2mcscstoch-raw': p2mcscstoch_raw, appendhbtype + 'p2scscstoch-raw': p2scscstoch_raw,
-           appendhbtype + 'p2mcmcstoch-ra20': p2mcmcstoch_ra20, appendhbtype + 'p2mcscstoch-ra20': p2mcscstoch_ra20, appendhbtype + 'p2scscstoch-ra20': p2scscstoch_ra20,
-           appendhbtype + 'p2mcmcstoch-dispav': p2mcmcstochdispav, appendhbtype + 'p2mcscstoch-dispav': p2mcscstochdispav, appendhbtype + 'p2scscstoch-dispav': p2scscstochdispav,
+           'allp2mcmcstochraw': allp2mcmcstoch_raw, 'allp2mcscstochraw': allp2mcscstoch_raw, 'allp2scscstochraw': allp2scscstoch_raw,
+           'allp2mcmcstochra20': allp2mcmcstoch_ra20, 'allp2mcscstochra20': allp2mcscstoch_ra20, 'allp2scscstochra20': allp2scscstoch_ra20,
+           'allp2mcmcstochdispav': allp2mcmcstochdispav, 'allp2mcscstochdispav': allp2mcscstochdispav, 'allp2scscstochdispav': allp2scscstochdispav,
+           'adjp2mcmcstochraw': adjp2mcmcstoch_raw, 'adjp2mcscstochraw': adjp2mcscstoch_raw, 'adjp2scscstochraw': adjp2scscstoch_raw,
+           'adjp2mcmcstochra20': adjp2mcmcstoch_ra20, 'adjp2mcscstochra20': adjp2mcscstoch_ra20, 'adjp2scscstochra20': adjp2scscstoch_ra20,
+           'adjp2mcmcstochdispav': adjp2mcmcstochdispav, 'adjp2mcscstochdispav': adjp2mcscstochdispav, 'adjp2scscstochdispav': adjp2scscstochdispav,
 
-           appendhbtype + 'p2mcmcstab-raw': p2mcmcstab_raw, appendhbtype + 'p2mcscstab-raw': p2mcscstab_raw, appendhbtype + 'p2scscstab-raw': p2scscstab_raw,
-           appendhbtype + 'p2mcmcstab-ra20': p2mcmcstab_ra20, appendhbtype + 'p2mcscstab-ra20': p2mcscstab_ra20, appendhbtype + 'p2scscstab-ra20': p2scscstab_ra20,
-           appendhbtype + 'p2mcmcstab-dispav': p2mcmcstabdispav, appendhbtype + 'p2mcscstab-dispav': p2mcscstabdispav, appendhbtype + 'p2scscstab-dispav': p2scscstabdispav,
+           'allp2mcmcstabraw': allp2mcmcstab_raw, 'allp2mcscstabraw': allp2mcscstab_raw, 'allp2scscstabraw': allp2scscstab_raw,
+           'allp2mcmcstabra20': allp2mcmcstab_ra20, 'allp2mcscstabra20': allp2mcscstab_ra20, 'allp2scscstabra20': allp2scscstab_ra20,
+           'allp2mcmcstabdispav': allp2mcmcstabdispav, 'allp2mcscstabdispav': allp2mcscstabdispav, 'allp2scscstabdispav': allp2scscstabdispav,
+           'adjp2mcmcstabraw': adjp2mcmcstab_raw, 'adjp2mcscstabraw': adjp2mcscstab_raw, 'adjp2scscstabraw': adjp2scscstab_raw,
+           'adjp2mcmcstabra20': adjp2mcmcstab_ra20, 'adjp2mcscstabra20': adjp2mcscstab_ra20, 'adjp2scscstabra20': adjp2scscstab_ra20,
+           'adjp2mcmcstabdispav': adjp2mcmcstabdispav, 'adjp2mcscstabdispav': adjp2mcscstabdispav, 'adjp2scscstabdispav': adjp2scscstabdispav,
 
            }
     return has

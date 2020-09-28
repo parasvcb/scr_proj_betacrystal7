@@ -1,0 +1,16 @@
+
+        package require hbonds
+        mol load psf ../tyrone_set3/polyvaline/processed/wowater.psf dcd ../tyrone_set3/polyvaline/processed/wowaterpulling.dcd
+        set g1 [atomselect top "chain C"]
+        set g2 [atomselect top "protein and not chain C"]
+
+        set mol [molinfo top]
+        set nf [molinfo $mol get numframes]
+    
+        for {set i 0} {$i < $nf} {incr i} {
+        $g1 frame $i
+        $g2 frame $i
+        hbonds -sel1 $g1 -sel2 $g2 -frames $i:$i -dist 3.5 -ang 30 -writefile yes -upsel yes -plot no -type unique -detailout ../tyrone_set3/polyvaline/processed/hbonds_all/$i.hbdata
+        }
+        exit
+        

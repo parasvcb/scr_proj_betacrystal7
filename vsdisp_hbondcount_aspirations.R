@@ -10,7 +10,7 @@ library(ggplot2)
 library(reshape)
 directories=list.dirs(path = systemFile, full.names = TRUE, recursive=F)
 cropDF <- function(dfpre,polymer) {
-    dffile="processed/dataframe_vnew2.tsv"
+    dffile="processed/dataframe_vnew3.tsv"
     dfadd=file.path(dfpre,polymer,dffile)
     dataforce=read.csv(dfadd,sep = "\t",check.names = FALSE)
     colnames(dataforce)[which(names(dataforce) == "frames-raw")] <- "frames"
@@ -107,13 +107,17 @@ plotallad <- function(df,extractele,outapp) {
     coeff=round(maxval / 3,digits=2)
     #data$PROFILE <- sub("^([a-z]+[A-B]).*", "\\1", data$PROFILE)
     #dfset2$category <- sub("all", "nonadj", dfset2$category)
+    
     dfset2$category <- sub("hball", "", dfset2$category)
     dfset2$category <- sub("hbadj", "", dfset2$category)
-    
+    dfset2$category <- sub("hbnad", "", dfset2$category)
+    print ('informations')
+
+    print (unique(dfset2$category))
     gg <- ggplot()
     gg <- gg + geom_line(data=dfset2[!is.na(dfset2$value),], aes(x=displacement,y=value,color=category),size=0.4, alpha=0.8) 
     gg <- gg + geom_line(data=dfForce[!is.na(dfForce$value),], aes(x=displacement, y=(value / 1000)*coeff), size=0.1, alpha=0.8)
-    gg <- gg + scale_color_manual(values=c("red",c1,c11,c2,c21,c3,c31,c1,c11,c2,c21,c3,c31))
+    gg <- gg + scale_color_manual(values=c(c1,c11,c2,c21,c3,c31,c1,c11,c2,c21,c3,c31,'red'))
     gg <- gg + scale_y_continuous(name='Hb_count',sec.axis = sec_axis(~./coeff, name="Force (nN)")) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + facet_wrap(~polymer,ncol=1) 
@@ -129,8 +133,13 @@ plotcombined <- function(df,extractele,outapp) {
     df$hbcolor <- ifelse(grepl('adjmcmc',df$variable), 'adj_mcmc',
                    ifelse(grepl('adjscsc',df$category), 'adj_scsc',
                 ifelse(grepl('adjmcsc',df$category), 'adj_mcsc',
-                ifelse(grepl('allmcmc',df$variable), 'nonadj_mcmc',
-                   ifelse(grepl('allscsc',df$category), 'nonadj_scsc','nonadj_mcsc')))))
+                ifelse(grepl('allmcmc',df$variable), 'all_mcmc',
+                   ifelse(grepl('allscsc',df$category), 'all_scsc',
+                   ifelse(grepl('allmcsc',df$category), 'all_mcsc',
+                  ifelse(grepl('nadmcmc',df$variable), 'nonad_mcmc',
+                   ifelse(grepl('nadscsc',df$category), 'nonad_scsc',
+                   ifelse(grepl('nadmcsc',df$category), 'nonad_mcsc', 'force')))))))))
+            
     dfset=df[(df$keeps=='keep'),]
     dfForce=dfset[(dfset$variable=='for-dispav'),]
     #adding this new line here, to get a smoother control in different dataframe
@@ -148,8 +157,8 @@ plotcombined <- function(df,extractele,outapp) {
     coeff=round(maxval / 3,digits=2)
     gg <- ggplot(data=dfset1[!is.na(dfset1$value),], aes(x=displacement,y=value,color=hbcolor))
     gg <- gg + geom_line(size=0.4,alpha=0.8 )
-    gg <- gg + geom_line(data=dfForce[!is.na(dfForce$value),], aes(x=displacement, y=(value / 1000)*coeff), size=0.1, alpha=0.8)
-    gg <- gg + scale_color_manual(values=c("black","darkgreen","blue","red","gray","green","lightblue"))
+    gg <- gg + geom_line(data=dfForce[!is.na(dfForce$value),], aes(x=displacement, y=(value / 1000)*coeff), size=0.1, alpha=1)
+    gg <- gg + scale_color_manual(values=c("black","darkgreen","blue","cyan","orange","pink","gray","red","lightblue","green"))
     gg <- gg + scale_y_continuous(name='Hb_count',sec.axis = sec_axis(~./coeff, name="Force (nN)")) 
     gg <- gg + scale_x_continuous(name="Displacement (Ang)",breaks=seq(-2,25,4))
     gg <- gg + facet_wrap(~polymer,ncol=1)
@@ -168,7 +177,8 @@ plotcombined(dfgen,'hb',paste0(out,'hbcombined_vericalStack'))
 #above function will only deal with the hbond categories (mc sc and combination) other than partial views,
 #it will plot both the ajdcanet and non adjacnet with the running average in form of diapav
 plotallad(dfgen,'hbadj',paste0(out,'hbAdj_verticalStack'))
-plotallad(dfgen,'hball',paste0(out,'hbNonAdj_verticalStack'))
+plotallad(dfgen,'hball',paste0(out,'hbAll_verticalStack'))
+plotallad(dfgen,'hbnad',paste0(out,'hbNad_verticalStack'))
 
 
 #Rscript vsdisp_hbondcount.R ../menton_set/ ../plots/new4sep/

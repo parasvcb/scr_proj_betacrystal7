@@ -9,16 +9,20 @@ plothbdata <- function(inputdataframe,outputfile) {
 dfgen=read.csv(inputdataframe,sep = "\t",check.names = FALSE)
 dfgen=dfgen[!(dfgen$polymer=='polyala_constrained') & !(dfgen$polymer=='polygly_constrained') & !(dfgen$polymer=='polyisoleucine_server191') & !(dfgen$polymer=='polyisoleucine_78') & !(dfgen$polymer=='polyisoleucine_turing'),]
 
-newColNames <- c("category", "hbtype")
-newCols <- colsplit(dfgen$datatype, "_", newColNames)
-dfgen <- cbind(dfgen, newCols)
-drops <- c("datatype")
-dfgen<-dfgen[ , !(names(dfgen) %in% drops)]
+print (head(dfgen))
+print (unique(dfgen$datatype))
+
+#dfgen<-dfgen[ , !(names(dfgen) %in% drops)]
 
 #print (head(dfgen))
-dfgen$hbfrom <- ifelse(grepl('all',dfgen$category), 'nonadj', 'adj')
-dfgen$hbnature <- ifelse(grepl('stoch',dfgen$category), 'stochastic',
-                  ifelse(grepl('stab',dfgen$category), 'stable',   'raw'))
+dfgen$hbfrom <- ifelse(grepl('all',dfgen$datatype), '1_all',
+                ifelse(grepl('nad',dfgen$datatype), '3_nad','2_adj'))
+
+dfgen$hbtype <- ifelse(grepl('mcmc',dfgen$datatype), 'mcmc',
+                  ifelse(grepl('scsc',dfgen$datatype), 'scsc',   'mcsc'))
+
+dfgen$hbnature <- ifelse(grepl('stoch',dfgen$datatype), 'stochastic',
+                  ifelse(grepl('stab',dfgen$datatype), 'stable',   'raw'))
 # this should be segregated such that, raw information will be available in one plot (df)
 # stab and stoch will go together for adj and nondadj so in one df (plot) 
 
@@ -86,14 +90,14 @@ gg <- gg + scale_fill_manual(values=c("gray","green","red"))
 #gg <- gg + geom_text(aes(label=mean), position = position_stack(vjust = 0.5)) #vjust=1, color="black", size=1)
 gg <- gg + geom_errorbar(data= dfgen_secondary_comp, aes(x=hbx,y=vertmean,ymin=vertmean-std, ymax=vertmean+std,color = hbtype, width=0.3),position="identity") #+ geom_col(position = position_stack(reverse = TRUE))
 gg <- gg + scale_color_manual(values=c("brown","black","blue"))
-gg <- gg + facet_wrap(~facetvar,ncol=2,nrow=2)
+gg <- gg + facet_wrap(~facetvar,ncol=2,nrow=3)
 gg <- gg + ylab("Hb-count")
 gg <- gg + xlab("Polymer")
 gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
 ggsave(filename = paste(outputfile,'_','segregated_plot.pdf'))
 }
 plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_defaultall_cutt0.4all")
-
+#butgly-0pt5
 #plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_all_cutt0.6all")
 #plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_onlyglycine_cutt0.6all")
 #plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_all_cutt0.5all")

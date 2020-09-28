@@ -26,6 +26,9 @@ dfgen_adjacent = dfgen_adjacent[FALSE,]
 
 dfgen_nonadj=cropDF(systemFile,"polyglycine","processed/hbonds_nonadj_occurence.tsv")
 dfgen_nonadj = dfgen_nonadj[FALSE,]
+
+dfgen_all=cropDF(systemFile,"polyglycine","processed/hbonds_all_occurence.tsv")
+dfgen_all = dfgen_all[FALSE,]
 for (i in directories) {
     print (i)
     #print (systemFile)
@@ -34,10 +37,12 @@ for (i in directories) {
         #print (polymer)
         retdf_adjacent=cropDF(systemFile,polymer,"processed/hbonds_adjacent_occurence.tsv")
         retdf_nonadj=cropDF(systemFile,polymer,"processed/hbonds_nonadj_occurence.tsv")
+        retdf_all=cropDF(systemFile,polymer,"processed/hbonds_all_occurence.tsv")
         #print (head(dfgen_nonadj))
         #print (head(dfgen_adjacent))
         dfgen_adjacent=rbind(dfgen_adjacent,retdf_adjacent)
         dfgen_nonadj=rbind(dfgen_nonadj,retdf_nonadj)
+        dfgen_all=rbind(dfgen_all,retdf_all)
         #this function will get the dataframes appended together
  }
 }
@@ -60,7 +65,9 @@ plotfunc <- function (df,outfile) {
 
 dfgen_adjacent=dfgen_adjacent[!(dfgen_adjacent$polymer=='polyala_constrained') & !(dfgen_adjacent$polymer=='polygly_constrained') & !(dfgen_adjacent$polymer=='polyisoleucine_server191') & !(dfgen_adjacent$polymer=='polyisoleucine_78') & !(dfgen_adjacent$polymer=='polyisoleucine_turing'),]
 dfgen_nonadj=dfgen_nonadj[!(dfgen_nonadj$polymer=='polyala_constrained') & !(dfgen_nonadj$polymer=='polygly_constrained') & !(dfgen_nonadj$polymer=='polyisoleucine_server191') & !(dfgen_nonadj$polymer=='polyisoleucine_78') & !(dfgen_nonadj$polymer=='polyisoleucine_turing'),]
+dfgen_all=dfgen_all[!(dfgen_all$polymer=='polyala_constrained') & !(dfgen_all$polymer=='polygly_constrained') & !(dfgen_all$polymer=='polyisoleucine_server191') & !(dfgen_all$polymer=='polyisoleucine_78') & !(dfgen_all$polymer=='polyisoleucine_turing'),]
 
 
 plotfunc(dfgen_adjacent,paste0(out,'hbond_frequency_adjacent.pdf'))
 plotfunc(dfgen_nonadj,paste0(out,'hbond_frequency_nonadfgen_nonadj.pdf'))
+plotfunc(dfgen_all,paste0(out,'hbond_frequency_nonadfgen_all.pdf'))
