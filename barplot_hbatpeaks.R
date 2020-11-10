@@ -12,6 +12,14 @@ dfgen=dfgen[!(dfgen$polymer=='polyala_constrained') & !(dfgen$polymer=='polygly_
 print (head(dfgen))
 print (unique(dfgen$datatype))
 
+dfgen=dfgen[!(dfgen$polymer=='polyala_constrained') & !(dfgen$polymer=='polygly_constrained') & !(dfgen$polymer=='polyisoleucine_server191') & !(dfgen$polymer=='polyisoleucine_78') & !(dfgen$polymer=='polyisoleucine_turing'),]
+dfgen$polnew <- ifelse(grepl('polyalanine',dfgen$polymer), '1_poly-ala',
+                ifelse(grepl('polyala-gly',dfgen$polymer), '2_poly-alagly',
+                ifelse(grepl('polygly',dfgen$polymer), '3_poly-gly',
+                ifelse(grepl('polyasp',dfgen$polymer), '4_poly-asp',
+                ifelse(grepl('polythr',dfgen$polymer), '5_poly-thr',
+                ifelse(grepl('polyval',dfgen$polymer), '7_poly-val','6_poly-ile' 
+                ))))))
 #dfgen<-dfgen[ , !(names(dfgen) %in% drops)]
 
 #print (head(dfgen))
@@ -33,7 +41,7 @@ dfgen_primary$hbx <- paste(dfgen_primary$polymer,'_',dfgen_primary$hbfrom)
 #dfgen_secondary_nonadj = dfgen[(dfgen$hbfrom=='nonadj') & !(dfgen$hbnature=='raw'),]
 dfgen_secondary_comp = dfgen[!(dfgen$hbnature=='raw'),]
 dfgen_secondary_comp$facetvar <- paste(dfgen_secondary_comp$hbfrom,'_',dfgen_secondary_comp$hbnature)
-dfgen_secondary_comp$hbx <- dfgen_secondary_comp$polymer
+dfgen_secondary_comp$hbx <- dfgen_secondary_comp$polnew
 
 
 #print (head(dfgen))
@@ -53,29 +61,29 @@ dfgen_primary$vertmean[dfgen_primary$hbtype == "mcsc"] <- with (dfgen_primary, m
 dfgen_primary$vertmean[dfgen_primary$hbtype == "mcmc"] <- with (dfgen_primary, mean[dfgen_primary$hbtype == "mcmc"])
 
 
-#print (dfgen_primary)
-gg <- ggplot(data=dfgen_primary,aes(x=hbx,y=mean,fill=hbtype))
-gg <- gg + geom_bar(position="stack", stat="identity") + geom_col(position = position_stack(reverse = TRUE))
-gg <- gg + scale_fill_manual(values=c("gray","green","red"))
-#gg <- gg + geom_text(aes(label=mean), position = position_stack(vjust = 0.5)) #vjust=1, color="black", size=1)
-gg <- gg + geom_errorbar(aes(x=hbx,y=vertmean,ymin=vertmean-std, ymax=vertmean+std,color = hbtype, width=0.3),position="identity") #+ geom_col(position = position_stack(reverse = TRUE))
-gg <- gg + scale_color_manual(values=c("brown","black","blue"))
-gg <- gg + ylab("Hb-count")
-gg <- gg + xlab("Polymer")
-gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-ggsave(filename = paste(outputfile,'_','raw_plot.pdf'))
+# #print (dfgen_primary)
+# gg <- ggplot(data=dfgen_primary,aes(x=hbx,y=mean,fill=hbtype))
+# gg <- gg + geom_bar(position="stack", stat="identity") + geom_col(position = position_stack(reverse = TRUE))
+# gg <- gg + scale_fill_manual(values=c("gray","green","red"))
+# #gg <- gg + geom_text(aes(label=mean), position = position_stack(vjust = 0.5)) #vjust=1, color="black", size=1)
+# gg <- gg + geom_errorbar(aes(x=hbx,y=vertmean,ymin=vertmean-std, ymax=vertmean+std,color = hbtype, width=0.3),position="identity") #+ geom_col(position = position_stack(reverse = TRUE))
+# gg <- gg + scale_color_manual(values=c("brown","black","blue"))
+# gg <- gg + ylab("Hb-count")
+# gg <- gg + xlab("Polymer")
+# gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
+# ggsave(filename = paste(outputfile,'_','raw_plot.pdf'))
 
-gg <- ggplot(data=dfgen_primary,aes(x=polymer,y=mean,fill=hbtype))
+gg <- ggplot(data=dfgen_primary,aes(x=polnew,y=mean,fill=hbtype))
 gg <- gg + geom_bar(position="stack", stat="identity") + geom_col(position = position_stack(reverse = TRUE))
 gg <- gg + scale_fill_manual(values=c("gray","green","red"))
 #gg <- gg + geom_text(aes(label=mean), position = position_stack(vjust = 0.5)) #vjust=1, color="black", size=1)
-gg <- gg + geom_errorbar(aes(x=polymer,y=vertmean,ymin=vertmean-std, ymax=vertmean+std,color = hbtype, width=0.3),position="identity") #+ geom_col(position = position_stack(reverse = TRUE))
+gg <- gg + geom_errorbar(aes(x=polnew,y=vertmean,ymin=vertmean-std, ymax=vertmean+std,color = hbtype, width=0.3),position="identity") #+ geom_col(position = position_stack(reverse = TRUE))
 gg <- gg + scale_color_manual(values=c("brown","black","blue"))
 gg <- gg + ylab("Hb-count")
 gg <- gg + xlab("Polymer")
 gg <- gg + facet_wrap(~hbfrom,nrow=1)
 gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-ggsave(filename = paste(outputfile,'_','raw_plot_facet.pdf'))
+ggsave(filename = paste(outputfile,'_','Fig3_raw_plot_facet.pdf'))
 
 
 dfgen_secondary_comp$vertmean[dfgen_secondary_comp$hbtype == "scsc"] <- with (dfgen_secondary_comp, mean[dfgen_secondary_comp$hbtype == "mcmc"] + mean[dfgen_secondary_comp$hbtype == "mcsc"] + mean[dfgen_secondary_comp$hbtype == "scsc"])
@@ -94,26 +102,6 @@ gg <- gg + facet_wrap(~facetvar,ncol=2,nrow=3)
 gg <- gg + ylab("Hb-count")
 gg <- gg + xlab("Polymer")
 gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
-ggsave(filename = paste(outputfile,'_','segregated_plot.pdf'))
+ggsave(filename = paste(outputfile,'_','Fig4_segregated_plot.pdf'))
 }
-plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_defaultall_cutt0.4all")
-#butgly-0pt5
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_all_cutt0.6all")
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_onlyglycine_cutt0.6all")
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_all_cutt0.5all")
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist-1_onlyglycine_cutt0.5all")
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_nochange_cutt0.5all")
-#plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_nochange_cutt0.5onlyglycine")
-
-
-
-#plothbdata("../data_tsv/out_hbonds_peak_2.tsv","../plots/new4sep/peak2_hbdata_a_")
-
-#dist-1 for only glycine and cutt 0.6 all
-#dist-1 for all and cutt 0.5 all
-#dist-1 for only glycine and cutt 0.5 all
-# going to reformat the plotting style
-# adjacent and non-adjacent will go as one in barplot, with stacking of different scsc and other types
-# For each adj and non adj, there will be supplimnetarty stochastic and stable plots, [lay together], and facet them 
-# top and bottom,
-# Each column will have color bar as mean and std dev together 
+plothbdata("../data_tsv/out_hbonds_peak_1.tsv","../plots/new4sep/peak1_hbdata_dist_defaultall_cutt0.3all")

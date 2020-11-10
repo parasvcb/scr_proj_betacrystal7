@@ -81,7 +81,8 @@ waterdcdprod = os.path.join(dirsim, "dcd_outputs", "press_concatenate.dcd")
 psf = os.path.join(processingdir, "wowater.psf")
 dcdpull = os.path.join(processingdir, "wowaterpulling.dcd")
 dcdprod = os.path.join(processingdir, "wowaterprod.dcd")
-if not os.path.isfile(dcdprod):
+# if not os.path.isfile(dcdprod):
+if 0:
     if not os.path.isfile(waterdcdprod):
         waterdcdprod = mdcom.concatenate_dcd(os.path.join(dirsim, "dcd_outputs"), [
                                              "press_equil1/equil_p.dcd", "press_equil2/equil_p.dcd", "press_equil3/equil_p.dcd", "press_equil4/equil_p.dcd", "press_equil5/equil_p.dcd"], waterdcdprod, catdcd)
@@ -91,13 +92,15 @@ if not os.path.isfile(dcdprod):
     else:
         dcdprod = False
 
-if not os.path.isfile(rawpdb) or not os.path.isfile(minimizedpdb):
+# if not os.path.isfile(rawpdb) or not os.path.isfile(minimizedpdb):
+if 0:
     mdcom.removewaterfrompdb(
         waterpsf, waterpdb, os.path.join(processingdir, "raw_protein"))
     mdcom.removewaterfrompdb(waterpsf, waterminipdb, os.path.join(
         processingdir, "minimized_protein"))
 
-if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
+# if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
+if 0:
     mdcom.rmsd(dcdprod, minimizedpdb, processingdir)
 # sys.exit()
 # usually placed for fast group calculations
@@ -112,7 +115,8 @@ if not os.path.isfile(dcdpull):
 
 
 # sys.exit()
-if not os.path.isfile(os.path.join(processingdir, "dimensions.tsv")):
+# if not os.path.isfile(os.path.join(processingdir, "dimensions.tsv")):
+if 0:
     rawdim = mdcom.nanocrystal_dimensions(
         waterpsf, waterpdb, centerofmasstclscript)
     mindim = mdcom.nanocrystal_dimensions(waterpsf, os.path.join(
@@ -157,7 +161,8 @@ peakhas = {peak1[0]: peak1[1], peak2[0]: peak2[1]}
 downhas = {down1[0]: down1[1], down2[0]: down2[1]}
 # so here we stored, displacement peak values as keys and force as their values
 
-if not (os.path.isfile(os.path.join(processingdir, "toughness.tsv"))):
+# if not (os.path.isfile(os.path.join(processingdir, "toughness.tsv"))):
+if 0:
     volume = mdcom.nanocrystal_volume(waterpsf, waterpdb)
     # print (volume,poltype)
     toughness_data_all, toughness_data_1stpeak, toughness_data_2aa = mdpro.toughness(
@@ -167,6 +172,7 @@ if not (os.path.isfile(os.path.join(processingdir, "toughness.tsv"))):
         fout.write("Complete\t%s\n" % (toughness_data_all))
         fout.write("1stpeak\t%s\n" % (toughness_data_1stpeak))
         fout.write("2aadist\t%s\n" % (toughness_data_2aa))
+
 # sys.exit()
 framestravelled = mdpro.framestravelled(distC, dispint=0.5)
 
@@ -174,7 +180,7 @@ framestravelled = mdpro.framestravelled(distC, dispint=0.5)
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
 # tdirhball = os.path.join(processingdir, 'hbonds_all')
-cuttoff = 0.4
+cuttoff = 0.3
 if poltype == "polyglycine" and 0:
     floatdigit = len(str(peak1[0]).split('.')[-1])
     # print(peak1[0], floatdigit)
@@ -188,7 +194,7 @@ fullformhbs = {'hbnad': 'hbonds_nonadj',
                'hbadj': 'hbonds_adjacent', 'hball': 'hbonds_all'}
 hashbdf = {}
 extractout = {}
-for hbtype in ['hbnad', 'hbadj', 'hball']:
+for hbtype in ['hbadj', 'hbnad', 'hball']:
     dirtemp = os.path.join(processingdir, fullformhbs[hbtype])
     mdpro.makedir(dirtemp)
     if not len(os.listdir(dirtemp)) > 10:
@@ -198,8 +204,10 @@ for hbtype in ['hbnad', 'hbadj', 'hball']:
             psf=psf, dcd=dcdpull, outfile=dirtemp, mode=hbtype)
         # if directory files are not present
         # compute them else merge them into dataframe
+    print(poltype, reptype)
     hbondData = mdpro.hbonds_calculator3layer(
         dirtemp, hbtype, distC, peak1[0], down1[0], peak2[0], dispint=dispint, cuttofffrommain=cuttoff)
+    sys.exit()
     temphas = {i: hbondData[i] for i in hbondData if 'dispav' in i}
     hbondData = {i: hbondData[i] for i in hbondData if 'dispav' not in i}
     extractout.update(temphas)

@@ -354,7 +354,8 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, pl
             frame = int(fil.split('.')[0])
             framewise[frame] = []
             if frame <= 8000:
-                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')                          : 0, ('Side', 'Side'): 0}
+                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')
+                           : 0, ('Side', 'Side'): 0}
                 with open(os.path.join(directory, fil)) as fin:
                     for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
                         acc, don, occ = line.split()
@@ -547,6 +548,8 @@ def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cutt
 
     framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
     framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
+    print(max(framesrange_first_ascent), min(framesrange_first_ascent))
+    sys.exit()
     p1mcmcstoch_raw, p1mcmcstoch_ra20, p1mcmcstochdispav, \
         p1mcmcstab_raw, p1mcmcstab_ra20, p1mcmcstabdispav, \
         p1scscstoch_raw, p1scscstoch_ra20, p1scscstochdispav, \
