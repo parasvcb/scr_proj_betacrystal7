@@ -1,0 +1,87 @@
+
+python cumulative_df.py ../ ../data_tsv/out
+#Rscript plothb_hbplot.R 
+Rscript barplot_hbatpeaks.R
+Rscript vsdisp_hbondcount.R ../menton_set/ ../plots/new4sep/
+Rscript vsdisp_force.R ../menton_set/ ../plots/new4sep/
+
+
+
+
+Tweaks and editing main dataset
+
+dffile1="../tyrone_set3/polyglycine/processed/dataframe_vnew2.tsv"
+dffile2="../tyrone_set3/polyalanine_default/processed/dataframe_vnew2.tsv"
+dffile3="../tyrone_set3/polyala-gly/processed/dataframe_vnew2.tsv"
+
+dataforce1=read.csv(dffile1,sep = "\t",check.names = FALSE)
+colnames(dataforce1)[which(names(dataforce1) == "for-ra20")] <- "forcera20"
+colnames(dataforce1)[which(names(dataforce1) == "for-dispav")] <- "forcedispav"
+dataforce1 <- subset(dataforce1, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce1,"polyglycine_data_r3.tsv",sep = "\t")
+
+dataforce2=read.csv(dffile2,sep = "\t",check.names = FALSE)
+colnames(dataforce2)[which(names(dataforce2) == "for-ra20")] <- "forcera20"
+colnames(dataforce2)[which(names(dataforce2) == "for-dispav")] <- "forcedispav"
+dataforce2 <- subset(dataforce2, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce2,"polyala_data_r3.tsv",sep = "\t")
+
+dataforce3=read.csv(dffile3,sep = "\t",check.names = FALSE)
+colnames(dataforce3)[which(names(dataforce3) == "for-ra20")] <- "forcera20"
+colnames(dataforce3)[which(names(dataforce3) == "for-dispav")] <- "forcedispav"
+dataforce3 <- subset(dataforce3, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce3,"polyalagly_data_r3.tsv",sep = "\t")
+
+
+
+cp ../menton_set/polyalanine_default/logs/force.log alanine/f1.log
+cp ../tyroneP_set/polyalanine_default/logs/force.log alanine/f2.log
+cp ../tyrone_set3/polyalanine_default/logs/force.log alanine/f3.log
+
+cp ../menton_set/polyalanine_default/configurations/force.conf alanine/c1.conf
+cp ../tyroneP_set/polyalanine_default/configurations/force.conf alanine/c2.conf
+cp ../tyrone_set3/polyalanine_default/configurations/force.conf alanine/c3.conf
+
+cp ../menton_set/polyglycine/logs/force.log glycine/f1.log
+cp ../tyroneP_set/polyglycine/logs/force.log glycine/f2.log
+cp ../tyrone_set3/polyglycine/logs/force.log glycine/f3.log
+
+cp ../menton_set/polyglycine/configurations/force.conf glycine/c1.conf
+cp ../tyroneP_set/polyglycine/configurations/force.conf glycine/c2.conf
+cp ../tyrone_set3/polyglycine/configurations/force.conf glycine/c3.conf
+
+cp ../menton_set/polyala-gly/logs/force.log alagly/f1.log
+cp ../tyroneP_set/polyala-gly/logs/force.log alagly/f2.log
+cp ../tyrone_set3/polyala-gly/logs/force.log alagly/f3.log
+
+cp ../menton_set/polyala-gly/configurations/force.conf alagly/c1.conf
+cp ../tyroneP_set/polyala-gly/configurations/force.conf alagly/c2.conf
+cp ../tyrone_set3/polyala-gly/configurations/force.conf alagly/c3.conf
+
+
+
+
+
+
+cp ../menton_set/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling1.dcd
+cp ../tyroneP_set/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling2.dcd
+cp ../tyrone_set3/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling3.dcd
+
+cp ../menton_set/polyalanine_default/processed/wowater.psf alanine/pulling.psf
+cp ../tyroneP_set/polyalanine_default/processed/minimized_protein.pdb alanine/pulling.pdb
+
+cp ../menton_set/polyglycine/processed/wowaterpulling.dcd glycine/pulling1.dcd
+cp ../tyroneP_set/polyglycine/processed/wowaterpulling.dcd glycine/pulling2.dcd
+cp ../tyrone_set3/polyglycine/processed/wowaterpulling.dcd glycine/pulling3.dcd
+
+cp ../menton_set/polyglycine/processed/wowater.psf glycine/pulling.psf
+cp ../tyroneP_set/polyglycine/processed/minimized_protein.pdb glycine/pulling.pdb
+
+cp ../menton_set/polyala-gly/processed/wowaterpulling.dcd alagly/pulling1.dcd
+cp ../tyroneP_set/polyala-gly/processed/wowaterpulling.dcd alagly/pulling2.dcd
+cp ../tyrone_set3/polyala-gly/processed/wowaterpulling.dcd alagly/pulling3.dcd
+
+cp ../menton_set/polyala-gly/processed/wowater.psf alagly/pulling.psf
+cp ../tyroneP_set/polyala-gly/processed/minimized_protein.pdb alagly/pulling.pdb
+
+rsync -av ../test/ biswajit@172.16.97.189:~/project/dcdpdblogconf/

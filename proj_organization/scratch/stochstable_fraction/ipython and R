@@ -1,0 +1,97 @@
+In [8]: with open ("logfraction.log") as fin: 
+   ...:     dat=[i for i in fin.read().split('\n') if len(i)>0] 
+
+
+In [19]: def updatehas(has,keymain,keysec,value): 
+    ...:     #print (keymain,keysec,value) 
+    ...:     if keymain not in has: 
+    ...:         has[keymain]={} 
+    ...:     if keysec not in has[keymain]: 
+    ...:         has[keymain][keysec]=[] 
+    ...:     has[keymain][keysec]+=[value] 
+    ...:     return has 
+    ...:                     
+
+In [20]: has3={} 
+    ...: has4={} 
+    ...: import re 
+    ...: for ind,val in enumerate(dat): 
+    ...:     pattmatch=re.search(r'hbonds_nonadj.*',val) 
+    ...:     if pattmatch: 
+    ...:         ele=pattmatch.group().split() 
+    ...:         hbcat0=ele[0] 
+    ...:         frac30= float(ele[1].split(',')[0].split('=')[1]) 
+    ...:         frac40= float(ele[1].split(',')[1].split('=')[1]) 
+    ...:         poltype=dat[ind+3].split()[0] 
+    ...:          
+    ...:         ele=dat[ind+1].split() 
+    ...:         hbcat1=ele[0] 
+    ...:         frac31= float(ele[1].split(',')[0].split('=')[1])  
+    ...:         frac41= float(ele[1].split(',')[1].split('=')[1]) 
+    ...:          
+    ...:         ele=dat[ind+2].split() 
+    ...:         hbcat2=ele[0] 
+    ...:         frac32= float(ele[1].split(',')[0].split('=')[1]) 
+    ...:         frac42= float(ele[1].split(',')[1].split('=')[1]) 
+    ...:          
+    ...:         has3=updatehas(has3,hbcat0,poltype,frac30) 
+    ...:         has3=updatehas(has3,hbcat1,poltype,frac31) 
+    ...:         has3=updatehas(has3,hbcat2,poltype,frac32) 
+    ...:          
+    ...:         has4=updatehas(has4,hbcat0,poltype,frac40) 
+    ...:         has4=updatehas(has4,hbcat1,poltype,frac41) 
+    ...:         has4=updatehas(has4,hbcat2,poltype,frac42) 
+    ...:                                                                                                                                                                         
+
+
+
+In [23]: with open ("histogram_frac3",'w') as fout: 
+    ...:     fout.write('hbtype\tpoltype\tfrac3mean\tfrac3std\n') 
+    ...:     for i in has3: 
+    ...:         for j in has3[i]: 
+    ...:             fout.write('%s\t%s\t%s\t%s\n'%(i,j,round(np.mean(has3[i][j]),2),round(np.std(has3[i][j]),2))) 
+    ...:              
+    ...:                                                                                                                                                                         
+
+In [24]: with open ("histogram_frac4",'w') as fout: 
+    ...:     fout.write('hbtype\tpoltype\tfrac3mean\tfrac3std\n') 
+    ...:     for i in has4: 
+    ...:         for j in has4[i]: 
+    ...:             fout.write('%s\t%s\t%s\t%s\n'%(i,j,round(np.mean(has4[i][j]),2),round(np.std(has4[i][j]),2))) 
+
+
+library(ggplot2)
+file1='histogram_frac3'
+file2='histogram_frac4'
+
+dfgen1=read.csv(file1,sep = "\t",check.names = FALSE)
+dfgen1=dfgen1[!(dfgen1$poltype=='polyala_constrained') & !(dfgen1$poltype=='polygly_constrained') & !(dfgen1$poltype=='polyisoleucine_server191') & !(dfgen1$poltype=='polyisoleucine_78') & !(dfgen1$poltype=='polyisoleucine_turing'),]
+
+dfgen1$hbfrom <- ifelse(grepl('all',dfgen1$hbtype), '1_all',
+                ifelse(grepl('nonadj',dfgen1$hbtype), '3_nad','2_adj'))
+gg <- ggplot(data=dfgen1,aes(x=poltype,y=frac3mean,fill=hbfrom))
+gg <- gg + geom_bar(position=position_dodge(), stat="identity",width=1) #+ geom_col(position = position_dodge())
+gg <- gg + scale_fill_manual(values=c("cyan","red","green"))
+gg <- gg + geom_errorbar(aes(x=poltype,y=frac3mean,ymin=frac3mean-frac3std, ymax=frac3mean+frac3std,color = hbfrom, width=0.3),width=.1,position=position_dodge(.9))
+gg <- gg + scale_color_manual(values=c("brown","black","blue"))
+gg <- gg + ylab("Hbfraction_as_stable")
+gg <- gg + xlab("poltype")
+#gg <- gg + facet_wrap(~hbfrom,nrow=1)
+gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
+ggsave(filename = 'frac3.pdf')
+
+dfgen2=read.csv(file1,sep = "\t",check.names = FALSE)
+dfgen2=dfgen2[!(dfgen2$poltype=='polyala_constrained') & !(dfgen2$poltype=='polygly_constrained') & !(dfgen2$poltype=='polyisoleucine_server191') & !(dfgen2$poltype=='polyisoleucine_78') & !(dfgen2$poltype=='polyisoleucine_turing'),]
+
+dfgen2$hbfrom <- ifelse(grepl('all',dfgen2$hbtype), '1_all',
+                ifelse(grepl('nonadj',dfgen2$hbtype), '3_nad','2_adj'))
+gg <- ggplot(data=dfgen2,aes(x=poltype,y=frac3mean,fill=hbfrom))
+gg <- gg + geom_bar(position=position_dodge(), stat="identity",width=1) #+ geom_col(position = position_dodge())
+gg <- gg + scale_fill_manual(values=c("cyan","red","green"))
+gg <- gg + geom_errorbar(aes(x=poltype,y=frac3mean,ymin=frac3mean-frac3std, ymax=frac3mean+frac3std,color = hbfrom, width=0.3),width=.1,position=position_dodge(.9))
+gg <- gg + scale_color_manual(values=c("brown","black","blue"))
+gg <- gg + ylab("Hbfraction_as_stable")
+gg <- gg + xlab("poltype")
+#gg <- gg + facet_wrap(~hbfrom,nrow=1)
+gg <- gg + theme (axis.text.x = element_text( hjust = 1, size = 7, angle = 45),axis.text.y = element_text( hjust = 1, size = 7), legend.position="top", panel.background = element_rect(fill = "white", colour = "grey50"),panel.grid.major = element_line(colour = "grey90"),panel.grid.minor = element_line(colour = "grey95",size = 0.25))
+ggsave(filename = 'frac4.pdf')
