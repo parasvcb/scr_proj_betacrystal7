@@ -1,89 +1,26 @@
 # betasheetnanocrystal
-data analysis of homopolymers of 2slk (6th july 2020)
 
+The overall structure of this project and this repo will be highlighted below,
 
-Data needs to be transferred from hulk to tyroneR and then for polyisoleucine sets to there
-rsync -a -f"+ */" -f"- *" hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
-rsync -av --exclude=*/dcd_outputs/* --exclude=*/before_mini/* --exclude=*/configurations/* --exclude=*/logs/* --exclude=*/arch*  hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
+Md simulations were handled differently and after that the following process was used,
 
+1. Data was analysed and compared for both the veloctites of buehler version and its 10 times faster velocity pull.
+2. Data was traditionally analysed in terms of a) F Vs D behaviour, b) toughness values, c) A and B for the first maximal pullout force and till first peak d) hydrogen bond count at the peak of system e) the delienation of these counts being stable and stochastic and their overall frequency distribution, f) count of these system variables with the displacement.
+3. Above listed two points were segregated into two different parts, data generation, and plotting, which will be detailed below.
 
-(still running)
+## inspiration and research approach
 
-after that update the rep over there and include both the plotting as well as the coding folders
+The basic task was to observe the behaviour of beta sheet nanocrystal pullout when the basic contents of beta sheet namocrsytal may be varied and variegated in general. can this be addressed from the perspective of protein design and engineering, especially in the era where a lot of focus has been given to widen the materials constrcuted from nothing but largely spider silk, though its a fibrous protein and has garnered attention because of its attributes where elasticity, torsional memory and biodegradability and anti bacterial properties are major highlights. Nonetheless, the molecular makeup of these fibrous proteins and especially silk is also very intriguing, its transition from liquid to solid forms, its ability to phase separate and undergo micellar fibrous elongation when subjected to ionic ph change in presenece of Co2 and the resulting hierarchical makeup also contributed to its enormous resrach fundings that this has magentized. So here we are very interested in the nanocrystalline regimen of this silk and how this strength attributes of thsi (for which its famour for) can be tweaked.
 
+For this i had used the following approach,
+took the 2slk structure, that does have antiparallel geometry and 3 layers and 5 strands, the picture of that will be pasted here or there, this structure does have poly ala-gly repeats of 6 with two termianl modifications. excluding terminal modifications and modifying the strcture with chain blocking yields the protein content of the structure. Those glycines were modified into alanine by muatation and thereafter this poly alanine structure was used to create polymers of different classes of amino acids, which will be breifly explained over here. **[pending is the google docs or email whee i have saved those strcutres for the reference]**
 
-Doing teh analysis of vislaulization
+those strcutres and their intersheet distance has been modified such that their will be minimal vanderWall clashes butr interactions, **[details pending]**.
 
-have a look at the simulation
-two taska at hand,,,
-have a look at the total backbone h bonds and H bonds between the SC SC, once done with them, do create the 14 and 10 membered rings, of the adjcanet strands, 
-make the Cb in VDW
+#### pressure equilibration of systems
 
-lets do it..
+#### parallel run for the systems over whioch they got exlcuded was also supposed to be notified their alterations and rest
 
-rsync -av --include="*/" --include="wowaterpulling.dcd" --exclude="*" tyroneR:/home/paras/project/betasheetnanocrystal/ ./
+##### this segregation can be attributed to details and the readme part later.
 
-
-
-programming fasters
-import os, subprocess,re
-deleted=['polyala_constrained','polygly_constrained','polyisoleucine_server191','polyisoleucine_78','polyisoleucine_turing']
-parent = "../"
-parent = "../"
-for i in os.listdir(parent):
-	if i in ["menton_set", "tyroneP_set", "tyrone_set3"]:
-		for j in os.listdir(os.path.join(parent,i)):
-			if re.match(r'poly[a-z]+',j):# and j not in deleted:
-				subprocess.check_call(['python','call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j)])
-				#break
-		#break
-subprocess.check_call(['python','cumulative_df.py',parent,os.path.join(parent,'data_tsv','out')])
-subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
-subprocess.check_call(['Rscript','vsdisp_hbondcount.R', os.path.join(parent,'menton_set'),os.path.join(parent,'plots','new4sep')])
-
-
-#above will compute the dfs
-
-python cumulative_df.py ../ ../out
- 
-Rscript barplot.r ../out_hbondsall_peak_1.tsv ../plots/barplotHB_All_p1.jpeg
-Rscript barplot.r ../out_hbondsall_peak_2.tsv ../plots/barplotHB_All_p2.jpeg
-Rscript barplot.r ../out_hbondsadjacent_peak_2.tsv ../plots/barplotHB_Ad_p2.jpeg
-Rscript barplot.r ../out_hbondsadjacent_peak_1.tsv ../plots/barplotHB_Ad_p1.jpeg
-Rscript barplot.r ../out_forcecum.tsv ../plots/barplotforcepeak.jpeg
-Rscript barplot.r ../out_toughnesscum.tsv ../plots/barplotToughness.jpeg
-
-#follwing will create fresh plots
-point plots arent updated so far,, will add to them
-
-rm ../plots/comparison/*/*.csv
-rm ../plots/comparison/*/*.jpeg
-
-Rscript plottingHelppoint.R ../menton_set/ ../plots/comparison/menton_set/ & 
-Rscript plottingHelppoint.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
-Rscript plottingHelppoint.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
-
-Rscript plottingHelpLine.R ../menton_set/ ../plots/comparison/menton_set/ &
-Rscript plottingHelpLine.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
-Rscript plottingHelpLine.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
-
-
-
-python call3layer.py ../menton_set/polyglycine/ ../menton_set/polyglycine/
-python call3layer.py ../tyroneP_set/polyglycine/ ../tyroneP_set/polyglycine/
-python call3layer.py ../tyrone_set3/polyglycine/ ../tyrone_set3/polyglycine/
-
-python call3layer.py ../menton_set/polyala-gly/ ../menton_set/polyala-gly/
-python call3layer.py ../tyroneP_set/polyala-gly/ ../tyroneP_set/polyala-gly/
-python call3layer.py ../tyrone_set3/polyala-gly/ ../tyrone_set3/polyala-gly/
-
-python cumulative_df.py ../ ../data_tsv/out
-Rscript barplot_hbatpeaks.R
-
-
-Here i am going to modify the overall contents of this repository so that it can handle the contents of the slower as well as faster pulls
-along with the segregation of data into the contents as listed in repository design by shashi pandit. 
-This whole repository wil go online and i have to be sure who will have access to that , it should noy be local.
-
-Do the basic organization over here and commit first, lateron do the inside modifications.
-
+once done with above details, here i would like to detail the data generation steps.

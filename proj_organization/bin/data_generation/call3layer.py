@@ -7,18 +7,22 @@ import module_processing as mdpro
 import modules_computing as mdcom
 import pandas as pd
 import numpy as np
+# this program taken in the arguements from user where the polymeric simulation trajectory has to be referred twice (they can be different also), this directory if have processed folder, then all the raw files will be added to that folder and thereafter will be used as file directory where the presence of output files will matter and raw data generation or computing from those will be continued later.
 if len(sys.argv) != 3:
-    print("Please enter correct cmd arguements 1:simdir 2:outfile")
+    print("Please enter correct cmd arguements 1:simdir 2:outdir")
     sys.exit()
-program, dirsim, outfile = sys.argv
+program, dirsim, outdir = sys.argv
 processingdir = os.path.join(dirsim, "processed")
-outfile = processingdir
+outputfinalfile = os.path.join(outdir, "dataframe_vnew3.tsv")
+
+outdir = processingdir
 mdpro.makedir(processingdir)
 del program
 prottype = re.search(r'poly\w+\-?\w*', dirsim).group()
 reptype = "menten" if "menton" in dirsim else "tyroneP" if "tyroneP" in dirsim else "tyroneR"
-if os.path.isfile(os.path.join(outfile, "dataframe_vnew.tsv")) and 0:
+if os.path.isfile(outputfinalfile):
     sys.exit()
+    #
 # -> arrow below needs to be fulfilled and otther dimesnions should be recorded but only for ra20 force peaks
 #
 has_testing = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
@@ -49,8 +53,8 @@ has_testing = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], '
                            'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 12)]},
                            'polyisoleucine': {'up': [(2, 8), (10, 14)], 'down': [(8, 10), (12, 14)]}}
                }
-# up will have bins here, from whree to whree and same for down
-# calculations for only first two peaks
+# up and downs dict labels have tuple of two values as list, where they represent the bin range from to where search the peak/descent
+# calculations for only first two peaks, (should be only 1)
 
 
 poltype = ''
@@ -81,26 +85,28 @@ waterdcdprod = os.path.join(dirsim, "dcd_outputs", "press_concatenate.dcd")
 psf = os.path.join(processingdir, "wowater.psf")
 dcdpull = os.path.join(processingdir, "wowaterpulling.dcd")
 dcdprod = os.path.join(processingdir, "wowaterprod.dcd")
-# if not os.path.isfile(dcdprod):
-if 0:
+
+if not os.path.isfile(dcdprod):
+    # if 0:
     if not os.path.isfile(waterdcdprod):
         waterdcdprod = mdcom.concatenate_dcd(os.path.join(dirsim, "dcd_outputs"), [
                                              "press_equil1/equil_p.dcd", "press_equil2/equil_p.dcd", "press_equil3/equil_p.dcd", "press_equil4/equil_p.dcd", "press_equil5/equil_p.dcd"], waterdcdprod, catdcd)
+        # -> this over here needs the changes, for the slower runs, this needs to be handled differently segregate it from non equilibrium simulations
     if waterdcdprod:
         mdcom.removewaterfromdcd(waterpsf, waterpdb, waterdcdprod,
                                  dcdprod, catdcd, processingdir)
     else:
         dcdprod = False
 
-# if not os.path.isfile(rawpdb) or not os.path.isfile(minimizedpdb):
-if 0:
+if not os.path.isfile(rawpdb) or not os.path.isfile(minimizedpdb):
+    # if 0:
     mdcom.removewaterfrompdb(
         waterpsf, waterpdb, os.path.join(processingdir, "raw_protein"))
     mdcom.removewaterfrompdb(waterpsf, waterminipdb, os.path.join(
         processingdir, "minimized_protein"))
 
-# if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
-if 0:
+if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
+    # if 0:
     mdcom.rmsd(dcdprod, minimizedpdb, processingdir)
 # sys.exit()
 # usually placed for fast group calculations
@@ -254,7 +260,7 @@ dfmain = pd.merge(dfmain, dfdispav, on=['displacement'], how='outer')
 
 dfmain = dfmain.sort_values(['frames-raw'])
 
-dfmain.to_csv(os.path.join(outfile, "dataframe_vnew3.tsv"),
+dfmain.to_csv(outputfinalfile,
               index=False, sep='\t')
 
 peak1has = {}
@@ -283,7 +289,7 @@ dfhbp2 = pd.DataFrame(peak2has)
 dfhbp1['displacement'] = dfhbp1.index
 dfhbp2['displacement'] = dfhbp2.index
 
-dfhbp1.to_csv(os.path.join(outfile, "hbonds_peaks1.tsv"),
+dfhbp1.to_csv(os.path.join(outdir, "hbonds_peaks1.tsv"),
               index=False, sep='\t')
-dfhbp2.to_csv(os.path.join(outfile, "hbonds_peaks2.tsv"),
+dfhbp2.to_csv(os.path.join(outdir, "hbonds_peaks2.tsv"),
               index=False, sep='\t')

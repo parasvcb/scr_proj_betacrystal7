@@ -1,4 +1,84 @@
 
+Data needs to be transferred from hulk to tyroneR and then for polyisoleucine sets to there
+rsync -a -f"+ */" -f"- *" hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
+rsync -av --exclude=*/dcd_outputs/* --exclude=*/before_mini/* --exclude=*/configurations/* --exclude=*/logs/* --exclude=*/arch*  hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
+
+
+(still running)
+
+after that update the rep over there and include both the plotting as well as the coding folders
+
+
+Doing teh analysis of vislaulization
+
+have a look at the simulation
+two taska at hand,,,
+have a look at the total backbone h bonds and H bonds between the SC SC, once done with them, do create the 14 and 10 membered rings, of the adjcanet strands, 
+make the Cb in VDW
+
+lets do it..
+
+rsync -av --include="*/" --include="wowaterpulling.dcd" --exclude="*" tyroneR:/home/paras/project/betasheetnanocrystal/ ./
+
+
+
+programming fasters
+import os, subprocess,re
+deleted=['polyala_constrained','polygly_constrained','polyisoleucine_server191','polyisoleucine_78','polyisoleucine_turing']
+parent = "../"
+parent = "../"
+for i in os.listdir(parent):
+	if i in ["menton_set", "tyroneP_set", "tyrone_set3"]:
+		for j in os.listdir(os.path.join(parent,i)):
+			if re.match(r'poly[a-z]+',j):# and j not in deleted:
+				subprocess.check_call(['python','call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j)])
+				#break
+		#break
+subprocess.check_call(['python','cumulative_df.py',parent,os.path.join(parent,'data_tsv','out')])
+subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
+subprocess.check_call(['Rscript','vsdisp_hbondcount.R', os.path.join(parent,'menton_set'),os.path.join(parent,'plots','new4sep')])
+
+
+#above will compute the dfs
+
+python cumulative_df.py ../ ../out
+ 
+Rscript barplot.r ../out_hbondsall_peak_1.tsv ../plots/barplotHB_All_p1.jpeg
+Rscript barplot.r ../out_hbondsall_peak_2.tsv ../plots/barplotHB_All_p2.jpeg
+Rscript barplot.r ../out_hbondsadjacent_peak_2.tsv ../plots/barplotHB_Ad_p2.jpeg
+Rscript barplot.r ../out_hbondsadjacent_peak_1.tsv ../plots/barplotHB_Ad_p1.jpeg
+Rscript barplot.r ../out_forcecum.tsv ../plots/barplotforcepeak.jpeg
+Rscript barplot.r ../out_toughnesscum.tsv ../plots/barplotToughness.jpeg
+
+#follwing will create fresh plots
+point plots arent updated so far,, will add to them
+
+rm ../plots/comparison/*/*.csv
+rm ../plots/comparison/*/*.jpeg
+
+Rscript plottingHelppoint.R ../menton_set/ ../plots/comparison/menton_set/ & 
+Rscript plottingHelppoint.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
+Rscript plottingHelppoint.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
+
+Rscript plottingHelpLine.R ../menton_set/ ../plots/comparison/menton_set/ &
+Rscript plottingHelpLine.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
+Rscript plottingHelpLine.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
+
+
+
+python call3layer.py ../menton_set/polyglycine/ ../menton_set/polyglycine/
+python call3layer.py ../tyroneP_set/polyglycine/ ../tyroneP_set/polyglycine/
+python call3layer.py ../tyrone_set3/polyglycine/ ../tyrone_set3/polyglycine/
+
+python call3layer.py ../menton_set/polyala-gly/ ../menton_set/polyala-gly/
+python call3layer.py ../tyroneP_set/polyala-gly/ ../tyroneP_set/polyala-gly/
+python call3layer.py ../tyrone_set3/polyala-gly/ ../tyrone_set3/polyala-gly/
+
+python cumulative_df.py ../ ../data_tsv/out
+Rscript barplot_hbatpeaks.R
+
+
+
 python cumulative_df.py ../ ../data_tsv/out
 #Rscript plothb_hbplot.R 
 Rscript barplot_hbatpeaks.R
