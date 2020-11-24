@@ -3,6 +3,7 @@ import sys
 import os
 import re
 import numpy as np
+from progress.bar import Bar
 from scipy.spatial import distance as scdist
 import subprocess
 from collections import Counter
@@ -77,6 +78,21 @@ def toughness(has, toughnessDistance, crysvol):
     return (return_jm3(areall, crysvol), return_jm3(area1stpeak, crysvol), return_jm3(area2aagen, crysvol))
 
 
+def angleaverages(filename, dis):
+    # this will feed in the H bond data from file to hash
+    with open(filename) as fin:
+        lis = []
+        for i in fin.read().split('\n')[1:]:
+            if len(i) > 0:
+                ele = i.split()
+                frame = int(ele[0])
+                angle = float(ele[2])
+                lis += [(frame, angle)]
+        raw = {i[0]: i[1] for i in lis[:8000]}
+    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
+    return raw, avgframe_ra20, avgframe_ra250
+
+
 def dispAvg(distC, varible, dispint=1):
     distval = list(distC.values())
     distval.sort()
@@ -131,6 +147,30 @@ def compute_averages(raw, dis, dispint, notProd=True):
         return raw, avgframe_ra20
 
 
+def framestravelled(distC, dispint):
+    distval = list(distC.values())
+    distval.sort()
+    bins = [i for i in np.arange(-4, int(distval[-1])+6, dispint)]
+    binshas = {(bins[i], bins[i+1]): 0 for i in range(0, len(bins)-1)}
+    for i in distval:
+        for j in binshas:
+            if i >= j[0] and i < j[1]:
+                binshas[j] += 1
+                break
+    distframes = {}
+    ins = 0
+    out = 0
+    # print(binshas)
+    for i in distC:
+        ins += 1
+        for j in binshas:
+            if distC[i] >= j[0] and distC[i] < j[1]:
+                out += 1
+                distframes[i] = binshas[j]
+                break
+    return distframes
+
+
 def forcedistance(dirsim):
     # will read smd file, to get the pulling direction coordinates
     with open(os.path.join(dirsim, "configurations/force.conf")) as fin:
@@ -155,6 +195,28 @@ def forcedistance(dirsim):
     # distance and force data were before subsetted to take only the first 8000 entries (for faster pull),
     # I am removing that condition (will be interesting to see, if inconsistencies in number of frames will emerge hence)
     return distC, forceC
+
+
+def parseEnergyFiles(filename):
+    # Frame\tTime\tElec\tVdW\tNonbond\tTotal\tVdWForce\tElecForce\tTotalForce
+    with open(filename) as fin:
+        dat = [i for i in fin.read().split("\n")[1:] if len(i) > 0]
+    hasElec = {}
+    hasVdw = {}
+    hasTotal = {}
+    hasElecForce = {}
+    hasVdwForce = {}
+    hasTotalForce = {}
+    for i in dat:
+        ele = i.split()
+        frame = int(ele[0])
+        hasElec[frame] = float(ele[2])
+        hasVdw[frame] = float(ele[3])
+        hasTotal[frame] = float(ele[5])
+        hasElecForce[frame] = float(ele[6])
+        hasVdwForce[frame] = float(ele[7])
+        hasTotalForce[frame] = float(ele[8])
+    return hasElec, hasVdw, hasTotal, hasElecForce, hasVdwForce, hasTotalForce
 
 
 def hbondaverages(filename, dis, dispint):
@@ -288,7 +350,7 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, pl
             frame = int(fil.split('.')[0])
             framewise[frame] = []
             if frame <= 8000:
-                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main'): 0, ('Side', 'Side'): 0}
+                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')                          : 0, ('Side', 'Side'): 0}
                 with open(os.path.join(directory, fil)) as fin:
                     for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
                         acc, don, occ = line.split()
@@ -469,10 +531,11 @@ def hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, pl
 
 
 def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cuttofffrommain):
-    # appendhbtype will hold values of 'hbadj', 'hbnad', 'hball'
+    # print(p1, d1, p2, "peaks")
+    # folder_all = os.path.join(dirsim, 'hbonds_all')
 
     # p1 is definately final major chunk of the data we are expecting to discuss,
-    # send framerange to find stoch and stab as different range and extrapolate stable information to the peak
+    # send framerange to find stoch and stab as different range and extrapltae stable informatyiion to the peak
 
     # above two folders will have the data for H bond types amd per frame files
     mcmc, mcmcra20, mcmcdispav, mcsc, mcscra20, mcscdispav, scsc, scscra20, scscdispav = hbondaverages_new(
@@ -520,3 +583,54 @@ def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cutt
 
            }
     return has
+
+
+def hbonds_calculator1layer(dirsim, dis):
+    filelis = ['hbonds_C_BD.dat', 'hbonds_C_BD_bbbb.dat',
+               'hbonds_C_BD_scsc.dat', 'hbonds_C_BD_scbb.dat']
+    has_map = {'hbonds_C_BD.dat': 'adjacent', 'hbonds_C_BD_bbbb.dat': 'adjacentbbbb',
+               'hbonds_C_BD_scsc.dat': 'adjacentscsc', 'hbonds_C_BD_scbb.dat': 'adjacentscbb'}
+    has = {}
+    for i in filelis:
+        raw, ra20, ra250 = hbondaverages(
+            os.path.join(dirsim, i), dis)
+        has[has_map[i]] = (raw, ra20, ra250)
+    return has
+
+
+def centreofmasscalc(filename, dis, dispint):
+    with open(filename) as fin:
+        dat = [i for i in fin.read().split('\n')[1:] if len(i) > 0]
+    comupsublow1st = []
+    comupsublow2nd = []
+    comupsublow3rd = []
+
+    for i in dat:
+        # print(i.dat.split("\t"))
+        frame, comup1st, comlw1st, comup2nd, comlw2nd, comup3rd, comlw3rd, = i.split(
+            '\t')
+        comup1st = map(float, comup1st.split())
+        comlw1st = map(float, comlw1st.split())
+        comup2nd = map(float, comup2nd.split())
+        comlw2nd = map(float, comlw2nd.split())
+        comup3rd = map(float, comup3rd.split())
+        comlw3rd = map(float, comlw3rd.split())
+        frame = int(frame)
+        comupsublow1st += [vec_sub(comup1st, comlw1st)]
+        comupsublow2nd += [vec_sub(comup2nd, comlw2nd)]
+        comupsublow3rd += [vec_sub(comup3rd, comlw3rd)]
+
+    com1st = {i: val-comupsublow1st[0]
+              for i, val in enumerate(comupsublow1st)}
+    com1st, com1_ra20, com1_dispav = compute_averages(com1st, dis, dispint)
+    com2nd = {i: val-comupsublow2nd[0]
+              for i, val in enumerate(comupsublow2nd)}
+    com2nd, com2_ra20, com2_dispav = compute_averages(com2nd, dis, dispint)
+
+    com3rd = {i: val-comupsublow3rd[0]
+              for i, val in enumerate(comupsublow3rd)}
+    com3rd, com3_ra20, com3_dispav = compute_averages(com3rd, dis, dispint)
+    # print("com1st", comupsublow1st[0])
+    # print("com2nd", comupsublow2nd[0])
+    # print("com3rd", comupsublow3rd[0])
+    return com1st, com1_ra20, com1_dispav, com2nd, com2_ra20, com2_dispav, com3rd, com3_ra20, com3_dispav
