@@ -17,3 +17,13 @@ get framestravelled highlighte din the main program only,
 
 
 need to know the  regions where peaks are supposed to be found out
+
+Get the description of each function in detail, 
+and the data output, where that function is being called and its expected output
+
+tuple(key_hbatom)
+should i change it from hbhasKeyAndFramewiseValue
+(done the change)
+
+satisfied with the context of the program (especially of H bond calclutaions)
+(it could have been simpler, buut its not)
