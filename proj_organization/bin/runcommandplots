@@ -20,20 +20,26 @@ lets do it..
 
 rsync -av --include="*/" --include="wowaterpulling.dcd" --exclude="*" tyroneR:/home/paras/project/betasheetnanocrystal/ ./
 
-
+#for no clash files
+rsync -mav --include="*/" --include="no_clash*.psf" --exclude="*" --exclude="extra_poly/*" velocity_fast/ velocity_buehler
 
 programming fasters
 import os, subprocess,re
 deleted=['polyala_constrained','polygly_constrained','polyisoleucine_server191','polyisoleucine_78','polyisoleucine_turing']
-parent = "../"
-parent = "../"
+parent = "../../velocity_buehler/"
+output=''
 for i in os.listdir(parent):
 	if i in ["menton_set", "tyroneP_set", "tyrone_set3"]:
 		for j in os.listdir(os.path.join(parent,i)):
 			if re.match(r'poly[a-z]+',j):# and j not in deleted:
-				subprocess.check_call(['python','call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j)])
-				#break
-		#break
+				if i=='menton_set' and j in ['polyglycine','polyala-gly']:
+					pass
+				else:
+					res=subprocess.check_output(['python','proj_organization/bin/data_generation/call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j),'0'])
+					output+='\n%s\n'%res
+with open(os.path.join(parent,'runlogs.log'),'w') as fout:
+	fout.write('%s'%(output))
+
 subprocess.check_call(['python','cumulative_df.py',parent,os.path.join(parent,'data_tsv','out')])
 subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
 subprocess.check_call(['Rscript','vsdisp_hbondcount.R', os.path.join(parent,'menton_set'),os.path.join(parent,'plots','new4sep')])
@@ -165,3 +171,21 @@ cp ../menton_set/polyala-gly/processed/wowater.psf alagly/pulling.psf
 cp ../tyroneP_set/polyala-gly/processed/minimized_protein.pdb alagly/pulling.pdb
 
 rsync -av ../test/ biswajit@172.16.97.189:~/project/dcdpdblogconf/
+
+
+
+cp menton_set/polyalanine_default/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyalanine_default/before_mini/
+cp menton_set/polyala-gly/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyala-gly/before_mini/
+cp menton_set/polyglycine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyglycine/before_mini/
+cp menton_set/polyisoleucine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyisoleucine/before_mini/
+cp menton_set/polyvaline/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyvaline/before_mini/
+cp menton_set/polyasparagine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyasparagine/before_mini/
+cp menton_set/polythreonine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polythreonine/before_mini/
+
+cp menton_set/polyalanine_default/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyalanine_default/before_mini/
+cp menton_set/polyala-gly/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyala-gly/before_mini/
+cp menton_set/polyglycine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyglycine/before_mini/
+cp menton_set/polyisoleucine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyisoleucine/before_mini/
+cp menton_set/polyvaline/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyvaline/before_mini/
+cp menton_set/polyasparagine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyasparagine/before_mini/
+cp menton_set/polythreonine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polythreonine/before_mini/

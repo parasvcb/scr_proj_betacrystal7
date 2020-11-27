@@ -5,7 +5,6 @@ import re
 import numpy as np
 from scipy.spatial import distance as scdist
 import subprocess
-from collections import Counter
 
 
 def movefile(source, destination):
@@ -157,22 +156,6 @@ def forcedistance(dirsim):
     return distC, forceC
 
 
-def hbondaverages(filename, dis, dispint):
-    # this will feed in the H bond data from file to hash
-    # print(filename)
-    with open(filename) as fin:
-        lis = []
-        for i in fin.read().split('\n'):
-            if len(i) > 0 and re.match(r'\d+\s+[-]?\d+.?\d*', i):
-                ele = i.split()
-                at = int(ele[0])
-                bt = float(ele[1])
-                lis += [(at, bt)]
-        raw = {i[0]: i[1] for i in lis[:8000]}
-    raw, avgframe_ra20, avgframe_ra250 = compute_averages(raw, dis)
-    return raw, avgframe_ra20, avgframe_ra250
-
-
 def getdiv(numerator, denominator, prec): return round(
     numerator / denominator, prec) if numerator > 0 and denominator > 0 else 0
 
@@ -312,7 +295,7 @@ def writehbhastocsv(has, filename):
             # print(sorteditems)
             for j in sorteditems:
                 hbtype = "_".join(j[1])
-                fout.write('%s\t%s\t%s\t%s\n' %
+                fout.write('%s\t%s\t%s\n' %
                            ("_".join(map(str, i)),  " : ".join(j[0]) , hbtype))
             fout.write('\n')
 
@@ -510,12 +493,6 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
         mcscstab_raw, mcscstab_ra20, mcscstabdispav = compute_averages(
             mcscstab_raw, dis, dispint)
 
-        # distrange = [dis[i] for i in framerange]
-        # maxd = max(distrange)
-        # mind = min(distrange)
-        # print (maxd,mind)
-        # sys.exit()
-        # print(raw_mcmcdispav)
         mcmcstochdispav = {i: mcmcstochdispav[i]
                            for i in mcmcstochdispav if mind <= i <= maxd}
         mcmcstabdispav = {i: mcmcstabdispav[i]
@@ -578,8 +555,9 @@ def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cutt
 
     framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
     framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
-    print(max(framesrange_first_ascent), min(framesrange_first_ascent))
-    sys.exit()
+    
+    print("framerange, max:%s, min %s"%(max(framesrange_first_ascent), min(framesrange_first_ascent)))
+    # sys.exit()
     p1mcmcstoch_raw, p1mcmcstoch_ra20, p1mcmcstochdispav, \
         p1mcmcstab_raw, p1mcmcstab_ra20, p1mcmcstabdispav, \
         p1scscstoch_raw, p1scscstoch_ra20, p1scscstochdispav, \

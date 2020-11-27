@@ -2,68 +2,12 @@ import re
 import os
 import subprocess
 import sys
-import math
-from Bio.PDB import Vector
-from Bio.PDB.vectors import calc_dihedral
 # will create all the dummy files ever needed for rest of processing
-
-
-def angle_cal(psf, dcd, output):
-    outfilelis = ['%s/coods_resid4' % (output), '%s/coods_resid6' % (output)]
-    if not (os.path.isfile(outfilelis[0]) and os.path.isfile(outfilelis[1])):
-        # will be calculating pseudo dihedral angles + actual dihedral angles for 2 and 4
-        string2 = '''
-        mol load psf %s dcd %s
-        set outdatafile6 [open "%s/coods_resid6" w]
-        set outdatafile4 [open "%s/coods_resid4" w]
-        puts $outdatafile6 "frame\tresid6CAxyz\tresid6CBxyz"
-        puts $outdatafile4 "frame\tresid4CAxyz\tresid4CBxyz"
-
-        set g6_1 [atomselect top "resid 6 and name C and chain C"]
-        set g6_2 [atomselect top "resid 6 and name O and chain C"]
-        set g4_1 [atomselect top "resid 4 and name C and chain C"]
-        set g4_2 [atomselect top "resid 4 and name O and chain C"]
-        set nf [molinfo top get numframes]
-
-        for {set i 0 } {$i < $nf} {incr i} {
-        $g6_1 frame $i
-        $g6_1 update
-        $g6_2 frame $i
-        $g6_2 update
-        $g4_1 frame $i
-        $g4_1 update
-        $g4_2 frame $i
-        $g4_2 update
-        set a1 [$g6_1 get {x y z}]
-        set a2 [$g6_2 get {x y z}]
-        set b1 [$g4_1 get {x y z}]
-        set b2 [$g4_2 get {x y z}]
-
-        puts $outdatafile6 "$i\t$a1\t$a2"
-        puts $outdatafile4 "$i\t$b1\t$b2"
-        unset a1
-        unset a2
-        unset b1
-        unset b2
-        }
-        close $outdatafile6
-        close $outdatafile4
-        exit
-        ''' % (psf, dcd, output, output)
-
-        res = callscript(string2)
-        del res
-    for i in outfilelis:
-        refineangleoutput(i)
-        print("call", i)
-    return
-
 
 def callcatdcd(catdcd, indexfile, inpdcd, outdcd):
     subprocess.check_output(
         catdcd+" -o %s -i %s %s" % (outdcd, indexfile, inpdcd), shell=True)
     return
-
 
 def callscript(script, mode="vmd"):
     if mode == "vmd":
@@ -79,7 +23,6 @@ def callscript(script, mode="vmd"):
             "Rscript tempscript.R", shell=True)
     # os.remove("tempscript.vmd")
     return res
-
 
 def checkFiles(filenamelis, directory=False):
     if directory:
@@ -97,7 +40,6 @@ def checkFiles(filenamelis, directory=False):
                 break
         return flag
 
-
 def concatenate_dcd(sourcedir, listaftersource, outputdcd, catdcd):
     newlis = []
     for i in listaftersource:
@@ -111,136 +53,6 @@ def concatenate_dcd(sourcedir, listaftersource, outputdcd, catdcd):
     subprocess.check_output(
         catdcd+" -o %s %s" % (outputdcd, stringdcd), shell=True)
     return outputdcd
-
-
-def com_calc(psf, dcd, centermassfile, output):
-    # this script needs a refresher, unset and remove
-    script = '''
-    source %s
-    mol load psf %s dcd %s
-    set filename "%s/com_gcm_pull.log"
-    set nf [molinfo top get numframes]
-    set outDataFile [open $filename w]
-    puts $outDataFile "frameno\tcomupp1st\tcomlow1st\tcomupp2nd\tcomlow2nd\tcomupp3rd\tcomlow3rd"
-
-    set upper1st [atomselect top "((chain G or chain I) and ((resid 7 or resid 6) and name CA)) or (chain H and ((resid 2 or resid 3) and name CA))"]
-    set lower1st [atomselect top "((chain L or chain N) and ((resid 7 or resid 6) and name CA)) or (chain M and ((resid 2 or resid 3) and name CA))"]
-    set upper2nd [atomselect top "((chain G or chain I) and ((resid 5 or resid 4) and name CA)) or (chain H and ((resid 5 or resid 4) and name CA))"]
-    set lower2nd [atomselect top "((chain L or chain N) and ((resid 5 or resid 4) and name CA)) or (chain M and ((resid 5 or resid 4) and name CA))"]
-    set upper3rd [atomselect top "((chain G or chain I) and ((resid 3 or resid 2) and name CA)) or (chain H and ((resid 6 or resid 7) and name CA))"]
-    set lower3rd [atomselect top "((chain L or chain N) and ((resid 3 or resid 2) and name CA)) or (chain M and ((resid 6 or resid 7) and name CA))"]
-
-    for {set i 0 } {$i < $nf} {incr i} {
-    $upper1st frame $i
-    $upper1st update
-    $lower1st frame $i
-    $lower1st update
-    $upper2nd frame $i
-    $upper2nd update
-    $lower2nd frame $i
-    $lower2nd update
-    $upper3rd frame $i
-    $upper3rd update
-    $lower3rd frame $i
-    $lower3rd update
-
-    set uppveccom1st [center_of_mass $upper1st]
-    set lowveccom1st [center_of_mass $lower1st]
-
-    set uppveccom2nd [center_of_mass $upper2nd]
-    set lowveccom2nd [center_of_mass $lower2nd]
-
-    set uppveccom3rd [center_of_mass $upper3rd]
-    set lowveccom3rd [center_of_mass $lower3rd] 
-    puts $outDataFile "$i\t$uppveccom1st\t$lowveccom1st\t$uppveccom2nd\t$lowveccom2nd\t$uppveccom3rd\t$lowveccom3rd"
-    unset uppveccom1st
-    unset lowveccom1st
-    unset uppveccom2nd
-    unset lowveccom2nd
-    unset uppveccom3rd
-    unset lowveccom3rd
-    }
-    close $outDataFile
-    exit
-    ''' % (centermassfile, psf, dcd, output)
-    res = callscript(script)
-    del res
-    return
-
-
-def energy_calc_3layer(psf, pdb, dcd, output, pulling=True):
-
-    stringPulling = '''
-    mol load psf %s dcd %s
-    set chC [atomselect top "chain C and protein"]
-    set chCbb [atomselect top "chain C and protein and backbone"]
-
-    set chBD [atomselect top "(chain D B) and protein"]
-    set chBDbb [atomselect top "(chain D B) and protein and backbone"]
-
-    set up [atomselect top "(chain I H G) and protein"]
-    set upbb [atomselect top "(chain I H G) and protein and backbone"]
-
-    set lw [atomselect top "(chain L M N) and protein"]
-    set lwbb [atomselect top "(chain L M N) and protein and backbone"]
-
-    package require namdenergy
-    set totalE [namdenergy -vdw -elec -nonb -sel $chC $chBD -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandBD.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $chCbb $chBDbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandBD_backbone.interaction"]
-
-    set totalE [namdenergy -vdw -elec -nonb -sel $chC $up -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandUP.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $chCbb $upbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandUP_backbone.interaction"]
-
-    set totalE [namdenergy -vdw -elec -nonb -sel $chC $lw -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandLOW.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $chCbb $lwbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandLOW_backbone.interaction"]
-    exit
-    ''' % (psf, dcd, output, output, output, output, output, output)
-
-    stringStatic = '''
-    mol load psf %s dcd %s
-
-    set midd [atomselect top "(chain D A E C B) and protein"]
-    set middbb [atomselect top "(chain D A E C B) and protein and backbone"]
-    set up [atomselect top "(chain I H G) and protein"]
-    set upbb [atomselect top "(chain I H G) and protein and backbone"]
-    set lw [atomselect top "(chain L M N) and protein"]
-    set lwbb [atomselect top "(chain L M N) and protein and backbone"]
-
-    package require namdenergy
-    set totalE [namdenergy -vdw -elec -nonb -sel $midd $up -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/prodprodMiddUp.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $middbb $upbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/prodMiddUp_backbone.interaction"]
-
-    set totalE [namdenergy -vdw -elec -nonb -sel $midd $lw -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/prodMiddLow.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $middbb $lwbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/prodMiddLow_backbone.interaction"]
-    exit
-    ''' % (psf, dcd, output, output, output, output)
-    string = stringPulling if pulling else stringStatic
-    res = callscript(string)
-    if 'ERROR' in res.decode('utf-8'):
-        print("ERROR temppullInt-->>", psf, pdb, output)
-
-
-def energy_calc_1layer(psf, pdb, dcd, output, pulling=True):
-
-    stringPulling = '''
-    mol load psf %s dcd %s
-    set chC [atomselect top "chain C and protein"]
-    set chCbb [atomselect top "chain C and protein and backbone"]
-
-    set chBD [atomselect top "(chain D B) and protein"]
-    set chBDbb [atomselect top "(chain D B) and protein and backbone"]
-
-    package require namdenergy
-    set totalE [namdenergy -vdw -elec -nonb -sel $chC $chBD -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandBD.interaction"]
-    set totalE [namdenergy -vdw -elec -nonb -sel $chCbb $chBDbb -par "par_all36_prot.prm" -keepforce -projforce -exe  "~/bin/namd2_m" -ofile "%s/pullChainCandBD_backbone.interaction"]
-    exit
-    ''' % (psf, dcd, output, output, output, output, output, output)
-
-    string = stringPulling
-    res = callscript(string)
-    if 'ERROR' in res.decode('utf-8'):
-        print("ERROR temppullInt-->>", psf, pdb, output)
-
 
 def hbonds_calculator3layer(psf, dcd, outfile, mode):
     hbgroup = {'hball': '[atomselect top "protein and not chain C"]',
@@ -267,34 +79,6 @@ def hbonds_calculator3layer(psf, dcd, outfile, mode):
     res = callscript(script)
     del res
     return
-
-
-def hbonds_calculator1layer(psf, dcd, outfile):
-
-    script = '''
-        package require hbonds
-        mol load psf %s dcd %s
-        set g1 [atomselect top "chain C"]
-        set g3 [atomselect top "chain B D"]
-        hbonds -sel1 $g1 -sel2 $g3 -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD.dat -writefile yes -upsel yes -plot no
-
-        set g1 [atomselect top "chain C and backbone"]
-        set g3 [atomselect top "chain B D and backbone"]
-        hbonds -sel1 $g1 -sel2 $g3 -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD_bbbb.dat -writefile yes -upsel yes -plot no
-
-        set g1 [atomselect top "chain C  and not backbone"]
-        set g3 [atomselect top "chain B D  and not backbone"]
-        hbonds -sel1 $g1 -sel2 $g3 -dist 3.5 -ang 25 -outfile %s/hbonds_C_BD_scsc.dat -writefile yes -upsel yes -plot no
-        exit
-        ''' % (psf, dcd, outfile, outfile, outfile)
-    fileparent = "%s/hbonds_C_BD.dat" % (outfile)
-    filechild1 = "%s/hbonds_C_BD_bbbb.dat" % (outfile)
-    filechild2 = "%s/hbonds_C_BD_scsc.dat" % (outfile)
-    filenewchild = "%s/hbonds_C_BD_scbb.dat" % (outfile)
-    res = callscript(script)
-    del res
-    return
-
 
 def nanocrystal_dimensions(psf, pdb, centermassfile):
     def fetchdistance(text):
@@ -416,42 +200,6 @@ def rmsd(dcd, minimizedpdb, output):
     ''' % (dcd, minimizedpdb, output, output)
     res = callscript(script, mode="R")
     return
-
-
-def refineangleoutput(filename):
-    with open(filename) as fin:
-        dat = fin.read()
-        dat = re.sub(r'{', '', dat)
-        dat = re.sub(r'}', '', dat)
-        dat = [i for i in dat.split('\n')[1:] if len(i) > 0]
-        print(dat[0], 'dat[0]')
-    newname = re.sub(r'coods', 'angle', filename)
-    with open(newname, 'w') as fin:
-        fin.write("Frame\tDihedralAngleRaw\tDihedralAngle360\n")
-        cacoods = []
-        cbcoods = []
-        for i in dat:
-            # print(i)
-            frame, ca, cb = i.split("\t")
-            ca = Vector(list(map(float, ca.split())))
-            cb = Vector(list(map(float, cb.split())))
-            cacoods += [ca]
-            cbcoods += [cb]
-        refca = cacoods[0]
-        refcb = cbcoods[0]
-        sub360 = False
-        subraw = False
-        for i in range(0, len(cacoods)):
-            angleraw = math.degrees(calc_dihedral(
-                refca, refcb, cbcoods[i], cacoods[i]))
-            #print(i, angleraw)
-            angle360 = angleraw if angleraw >= 0 else angleraw+360
-            if i == 0:
-                # sub360 = angle360
-                # subraw = angleraw
-                sub360 = 0
-                subraw = 0
-            fin.write("%s\t%s\t%s\n" % (i, angleraw-subraw, angle360-sub360))
 
 
 def removewaterfromdcd(waterpsf, waterpdb, inpdcd, outdcd, catdcd, tempadd):

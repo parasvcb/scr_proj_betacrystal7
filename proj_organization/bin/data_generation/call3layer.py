@@ -20,7 +20,13 @@ analyse_production = int(analyse_production)
 # general operations
 
 processingdir = os.path.join(dirsim, "processed")
-outputfinalfile = os.path.join(outdir, "dataframe_vnew3.tsv")
+outputfinalfile = os.path.join(processingdir, "dataframe_vnew3.tsv")
+
+if os.path.isfile(outputfinalfile):
+    sys.exit()
+
+outdir = processingdir
+mdpro.makedir(processingdir)
 
 for i in os.listdir(dirsim):
     source = os.path.join(dirsim, i)
@@ -32,7 +38,7 @@ for i in os.listdir(dirsim):
 
 
 # common file variable declarataions:
-catdcd = "$HOME/bin/catdcd"
+catdcd = "/home/paras/bin/catdcd"
 centerofmasstclscript = "/home/paras/bin/centerofmassgeom.tcl"
 
 waterpsf = os.path.join(dirsim, 'before_mini', "ionized.psf")
@@ -53,9 +59,11 @@ dcdprod = os.path.join(processingdir, "wowaterprod.dcd")
 # waterpsf,waterminipdb,wasterpdb,waterdcdpull are must needed files
 # -> check their presemce and exit the program if not there with a warning,
 
-if not mdcom.checkFiles([waterpsf, waterpdb, waterminipdb, waterdcdpull]):
+listFileEssential = [catdcd, centerofmasstclscript, waterpsf, waterpdb, waterminipdb, waterdcdpull]
+
+if not mdcom.checkFiles(listFileEssential):
     print("make sure follwing basic files were present and run again")
-    for i in [waterpsf, waterpdb, waterminipdb, waterdcdpull]:
+    for i in listFileEssential:
         print(i)
     sys.exit()
 
@@ -79,17 +87,9 @@ if analyse_production:
     if not (os.path.isfile(os.path.join(processingdir, "rmsd_firstframe.txt")) and os.path.isfile(os.path.join(processingdir, "rmsd_frompdb.txt"))):
         mdcom.rmsd(dcdprod, minimizedpdb, processingdir)
 
-outdir = processingdir
-mdpro.makedir(processingdir)
-del program
-prottype = re.search(r'poly\w+\-?\w*', dirsim).group()
-reptype = "menten" if "menton" in dirsim else "tyroneP" if "tyroneP" in dirsim else "tyroneR"
-if os.path.isfile(outputfinalfile):
-    sys.exit()
-    #
 # -> arrow below needs to be fulfilled and otther dimesnions should be recorded but only for ra20 force peaks
 #
-has_testing = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
+has_coordinate_range = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
                           'polyala-gly': {'up': [(1.5, 3), (8, 10)], 'down': [(4, 8), (12, 14)]},
                           'polyvaline': {'up': [(2, 6), (8, 12)], 'down': [(6, 8), (12, 14)]},
                           'polygly_constrained': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
@@ -117,25 +117,25 @@ has_testing = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], '
                            'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 12)]},
                            'polyisoleucine': {'up': [(2, 8), (10, 14)], 'down': [(8, 10), (12, 14)]}}
                }
-poltype = ''
-for i in has_testing['menten']:
-    if i in dirsim:
-        poltype = i
-
 # up and downs dict labels have tuple of two values as list, \
 # where they represent the bin range from to where search the peak/descent
 # calc. for only first two peaks, (only 1 is considered later)\
 #  [Based on visual depictions]
+poltype = ''
+for i in has_coordinate_range['menten']:
+    if i in dirsim:
+        poltype = i
+reptype = "menten" if "menton" in os.path.abspath(dirsim) else "tyroneP"\
+    if "tyroneP" in os.path.abspath(dirsim) else "tyroneR"
+
 
 if not mdcom.checkFiles([rawpdb]) or not mdcom.checkFiles([minimizedpdb]):
+    #both are without water versions
     # if 0:
     mdcom.removewaterfrompdb(
         waterpsf, waterpdb, os.path.join(processingdir, "raw_protein"))
     mdcom.removewaterfrompdb(waterpsf, waterminipdb, os.path.join(
         processingdir, "minimized_protein"))
-
-# sys.exit()
-# usually placed for fast group calculations
 
 if not mdcom.checkFiles([psf]):
     psfsource = os.path.join(dirsim, 'before_mini/no_clash_z_autopsf.psf')
@@ -173,15 +173,18 @@ forceC, force_ra20, forcedispav = mdpro.compute_averages(
 keystemp = list(forcedispav.keys())
 keystemp.sort()
 newarrtemp = [[i, forcedispav[i]] for i in keystemp]
+print (newarrtemp)
+print (has_coordinate_range[reptype][poltype]['up'][1])
+print (has_coordinate_range[reptype][poltype]['down'][1])
 # each element is a sublist having displacement bins averaged variable (force) values.
 peak1 = mdcom.peakdistances(
-    newarrtemp, has_testing[reptype][poltype]['up'][0], "max")
+    newarrtemp, has_coordinate_range[reptype][poltype]['up'][0], "max")
 down1 = mdcom.peakdistances(
-    newarrtemp, has_testing[reptype][poltype]['down'][0], "min")
+    newarrtemp, has_coordinate_range[reptype][poltype]['down'][0], "min")
 peak2 = mdcom.peakdistances(
-    newarrtemp, has_testing[reptype][poltype]['up'][1], "max")
+    newarrtemp, has_coordinate_range[reptype][poltype]['up'][1], "max")
 down2 = mdcom.peakdistances(
-    newarrtemp, has_testing[reptype][poltype]['down'][1], "min")
+    newarrtemp, has_coordinate_range[reptype][poltype]['down'][1], "min")
 # above four values have 2 values packed, displacemnet and force
 
 if not mdcom.checkFiles([peakdistancesfile]):
@@ -241,7 +244,7 @@ for hbtype in ['hbadj', 'hbnad', 'hball']:
     print(poltype, reptype)
     hbondData = mdpro.hbonds_calculator3layer(
         dirtemp, hbtype, distC, peak1[0], down1[0], peak2[0], dispint=dispint, cuttofffrommain=cuttoff_hbstable)
-    sys.exit()
+    # sys.exit()
     temphas = {i: hbondData[i] for i in hbondData if 'dispav' in i}
     hbondData = {i: hbondData[i] for i in hbondData if 'dispav' not in i}
     extractout.update(temphas)
