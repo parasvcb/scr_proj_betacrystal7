@@ -28,8 +28,8 @@ should i change it from hbhasKeyAndFramewiseValue
 (done the change)
 
 satisfied with the context of the program (especially of H bond calclutaions)
-`(it could have been simpler, buut its not)
-`
+(it could have been simpler, buut its not)
+
 Project name
 Project description
 Bunch of files
@@ -38,3 +38,113 @@ Bunch of files
 
 
 Thinking not to move into object oriented stuff, but deisgn can be thought off and implemented
+
+#generated figure3, F vs D, [use it to proxy the call3layer.py and imporve the overall design]
+use differnt hash for fast and slow,
+
+
+
+Do the analysis as per  the rings and cooperativity
+do as following, 
+
+
+three rings each side, 
+including both the chains, make 3 super rings, where eachj will account for the two terminus regions and regions near to termini and the middle region,
+for to call the integrity of the ring, do the follwoing,
+    If one H bond from either of the ring is present, 
+
+create 6 small rings, 
+    either one or both of H bonds are supposed to be present in that case [2 different ways]
+
+for each such scenario, 
+3 plots.
+plot them with the frame data, for clarity purpose do them in bins of 10 frames, if Hb ring is poresnt in atleast 50% of those rames mark it as presnt else absent, 
+start it from frame 1, show in background the force data
+
+Figure 1: Overview of beta-sheet nanocrystal shape, hydrogen bonding pattern and SMD
+boundary conditions. A) Representative poly-ALA model showing geometrical parameters
+used to define nanocrystal unit structure. The h, L,and b parameters corresponds in the
+nanocrystal to number of residues in a beta-strand, the number of beta-strands in a sheet, and
+number of sheets respectively. B) Figure showing hydrogen bonds topology in an ideal
+antiparallel beta-stand arrangement. It also shows ‘hydrogen bond ring’ (HB), which involves
+10 intermittent atoms between donor and acceptor and similarly, ‘non-hydrogen bond ring’
+(NHB) has 14 atoms. C) Cartoon representation showing the boundary condition of middle
+sheet used in SMD along with showing the central beta-strand (beta-CS). Hydrogen bonds are
+shown as thin lines between strands.
+
+Figure 2: Sidechain packing in beta-sheet nanocrystal. The transversal cross-section of
+nanocrystal showing Face-to-Face sidechain packing arrangement of a beta-strand in the
+middle sheet observed in various poly-amino acid models. The central beta-strand (beta-CS)
+packing is shown for SAA, PAA, and HAA models after equilibration step. A) The beta-CS
+is shown in blue color and other strands are shown either in yellow or red colors. The
+backbone and sidechain are shown in licorice and sphere representations, respectively.
+
+Figure 3: Representative average Force-displacement profile of pulling beta-CS in various
+poly-amino acid nanocrystals. Here, the best fit line is obtained as average of displacement at
+bin width of 0.1 Å.
+Figure 4: Mean tensile strength and toughness of various poly-amino acid models. A)
+Histogram of mean rupture peak force from three replicates is shown for SAA, PAA and
+HAA nanocrystals.B) Mean toughness calculated as area under the curve averaged force-
+displacement curves from three replicates are shown for SAA, PAA and HAA models. The
+standard deviation is shown as error bars on histogram.
+Figure 5: Hydrogen bond distribution at the maximum peak force. The figure is showing
+mean count of all hydrogen bonds, adjacent h-bonds and inter-sheet h-bonds in figure A, B
+and C respectively. The subtypes of hydrogen bond as MCMC, MCSC and SCSC are shown
+in gray, teal and orange red colors on histogram respectively. The standard deviation of three
+replicates is shown as error bars on respective stacked region of histogram.
+
+Figure S1: RMSD of all considered homopolymers models has been shown from NPT
+equilibration and calculated from minimized structure. Based on stabilization of all systems
+(~1ns), SMD pulling has been initiated from that time point. Only strands those were not
+fixed were used for calculating RMSD and ~4 ns of parallel production phase (after ~1ns of
+equilibration) has shown that systems remain largely stabilized in parallel nonbiased
+conditions. Increase in RMSD for bigger systems especially for HAA has been observed as
+they undergo twist from minimized structure.
+
+Figure S2: Overall orientation of nanocrystals prior to pulling has been shown for all
+considered homopolymers. Same timepoint snapshot that was used for inferring FToF
+contacts (Figure 2) has been used. Flat and twisted orientation can be easily inferred for
+bigger groups on contrasting with SAA.
+Figure S3: Force profiles with displacement of strand as function of pulling velocity has been
+shown for all the replicates, light gray colored has been used for representation of raw data
+and black line on top showed the displacement wise averaging.
+
+################
+Figure 1: Overview of beta-sheet nanocrystal shape, hydrogen bonding pattern and SMD boundary conditions. 
+Figure 2: Packing layout in betasheet nanocrystal
+Figure 3: Representative average Force-displacement profile of pulling beta-CS in various poly-amino acid nanocrystals with averaging.
+Figure 4: Mean tensile strength and toughness of various poly-amino acid models
+Figure 5: Hydrogen bond distribution at the maximum peak force. 
+
+Figure S1: RMSD of all considered homopolymers models has been shown from NPT equilibration and calculated from minimized structure.
+Figure S2: Overall orientation of nanocrystals prior to pulling has been shown for all considered homopolymers. Same timepoint snapshot that was used for inferring FToF contacts (Figure 2) has been used. Flat and twisted orientation can be easily inferred for bigger groups on contrasting with SAA.
+Figure S3: Force profiles with displacement of strand as function of pulling velocity has been shown for all the replicates, light gray colored has been used for representation of raw data and black line on top showed the displacement wise averaging.
+################
+
+Figures layout and legends (write philosphy in their context)
+Fig1: Layout and representation of the nanocrystalline region and simulation done along with dimensions.
+Fig2: The force vs displacement graph of the polymers and regions 
+Fig3: The barplots of the peak force and number of hydrogens at their peaks
+Fig4:
+
+###tasks, 4 dec 2020
+Do the following:
+
+Sno. priority Effort(hrs)    taskName
+1.	high	4	Make figure specific programs ready [almost done other than TCL files]
+2.	Med	2	Transfer the data to main repository for left out 4 polymers
+    Moving tyroneP's mentonsetpolythreonine to menton set polythreonine
+    
+3. High 2   Crop the DCD to point where it just came out, record the final framecount
+3.	Medium	6	Run and code maintenance for file and write unknown objectives
+4.	High	2	Write the readme
+5.	Medium	12	Compare and contrast the data for the two modes
+
+Figure raw data generation and rest of the stuff is pending so far,  
+
+Crop all the simulations to the point where they were out of the system, dont include rest.
+
+
+STuck for getting documentation of the fraction analysis done by me (done), i have to be sure that H bonds were changed in starting of the calculations
+
+fraction are dcumented and now is the case for vsdisp counts and hetamap tiles, 

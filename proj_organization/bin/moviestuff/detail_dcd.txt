@@ -1,0 +1,16 @@
+complete_designall.tcl works on dcd and give colored cartoon repr with licorice of backbone H bond atoms and colored Hb types (28 magneta, MCSC, 16 black MCMC , 20 green SCSC)
+
+run from parent pol dir.
+
+complete_designMCMC.tcl will have only the backbone
+complete_designnotMCMC.tcl will have both MCSC and SCSC 
+
+designnew.tcl and design.tcl dcd and shows elegant rupture
+
+
+
+ftofgly.tcl, shows the sidechain mapping of layers above blow of beta CS
+in menton_machine's project
+
+newdesign.tcl, used to show the overall geomtry of ayers above and below with their sidechains
+viewchains.tcl, also serves similar purpose but with different view, 

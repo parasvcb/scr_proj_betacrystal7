@@ -5,13 +5,19 @@ import subprocess
 import module_processing as mdpro
 import modules_computing as mdcom
 import pandas as pd
-
+import time
 # this program taken in the arguements from user where the polymeric simulation trajectory has to be referred twice (they can be different also), this directory if have processed folder, then all the raw files will be added to that folder and thereafter will be used as file directory where the presence of output files will matter and raw data generation or computing from those will be continued later.
 
+inst1=time.time()
 if len(sys.argv) != 4:
     print("Please enter correct cmd arguements \
         1:simdir 2:outdir 3:analyze the production run (0 no, 1 yes)")
     sys.exit()
+
+def timeoutput(start,end,message,exitflag=False):
+    print (message,round(end-start,3))
+    if exitflag:
+        sys.exit()
 
 program, dirsim, outdir, analyse_production = sys.argv
 del (program)
@@ -21,8 +27,9 @@ analyse_production = int(analyse_production)
 
 processingdir = os.path.join(dirsim, "processed")
 outputfinalfile = os.path.join(processingdir, "dataframe_vnew3.tsv")
+outputfinalfileOnlyForce = os.path.join(processingdir, "dataframe_Force.tsv")
 
-if os.path.isfile(outputfinalfile):
+if os.path.isfile(outputfinalfile) and 0:
     sys.exit()
 
 outdir = processingdir
@@ -59,7 +66,11 @@ dcdprod = os.path.join(processingdir, "wowaterprod.dcd")
 # waterpsf,waterminipdb,wasterpdb,waterdcdpull are must needed files
 # -> check their presemce and exit the program if not there with a warning,
 
-listFileEssential = [catdcd, centerofmasstclscript, waterpsf, waterpdb, waterminipdb, waterdcdpull]
+timeoutput(inst1,time.time(),'filecreation')
+
+#sys.exit()
+listFileEssential = [catdcd, centerofmasstclscript,
+                     waterpsf, waterpdb, waterminipdb, waterdcdpull]
 
 if not mdcom.checkFiles(listFileEssential):
     print("make sure follwing basic files were present and run again")
@@ -70,6 +81,8 @@ if not mdcom.checkFiles(listFileEssential):
 toughnessFile = os.path.join(processingdir, "toughness.tsv")
 dimensionsFile = os.path.join(processingdir, "dimensions.tsv")
 peakdistancesfile = os.path.join(processingdir, "peaks_distances.tsv")
+
+timeoutput(inst1,time.time(),'Basics')
 
 if analyse_production:
     # -> so many tweaks are pending
@@ -89,48 +102,108 @@ if analyse_production:
 
 # -> arrow below needs to be fulfilled and otther dimesnions should be recorded but only for ra20 force peaks
 #
-has_coordinate_range = {'menten': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
-                          'polyala-gly': {'up': [(1.5, 3), (8, 10)], 'down': [(4, 8), (12, 14)]},
-                          'polyvaline': {'up': [(2, 6), (8, 12)], 'down': [(6, 8), (12, 14)]},
-                          'polygly_constrained': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
-                          'polythreonine': {'up': [(1.5, 2.5), (8, 12)], 'down': [(4, 8), (12, 16)]},
-                          'polyala_constrained': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
-                          'polyglycine': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
-                          'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 12)]},
-                          'polyisoleucine': {'up': [(2, 6), (8, 10)], 'down': [(6, 10), (10, 14)]}},
-               'tyroneP': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 12)]},
-                           'polyala-gly': {'up': [(1.5, 3), (8, 10)], 'down': [(4, 8), (12, 14)]},
-                           'polyvaline': {'up': [(2, 6), (8, 12)], 'down': [(6, 8), (12, 14)]},
-                           'polygly_constrained': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
-                           'polythreonine': {'up': [(1.5, 2.5), (8, 12)], 'down': [(4, 8), (12, 16)]},
-                           'polyala_constrained': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
-                           'polyglycine': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
-                           'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 13)]},
-                           'polyisoleucine': {'up': [(2, 6), (8, 12)], 'down': [(6, 10), (10, 14)]}},
-               'tyroneR': {'polyalanine_default': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
-                           'polyala-gly': {'up': [(1.5, 3), (8, 10)], 'down': [(4, 8), (12, 14)]},
-                           'polyvaline': {'up': [(2, 6), (8, 10)], 'down': [(6, 8), (10, 11)]},
-                           'polygly_constrained': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 9)]},
-                           'polythreonine': {'up': [(1.5, 2.5), (8, 12)], 'down': [(6, 8), (8, 10)]},
-                           'polyala_constrained': {'up': [(1.5, 2.5), (8, 10)], 'down': [(6, 8), (10, 14)]},
-                           'polyglycine': {'up': [(1.5, 2.5), (5, 6.5)], 'down': [(2.5, 4.5), (6.5, 10)]},
-                           'polyasparagine': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 12)]},
-                           'polyisoleucine': {'up': [(2, 8), (10, 14)], 'down': [(8, 10), (12, 14)]}}
-               }
+has_fast={
+    'polyalanine_default':
+            {
+                'menten': {'up': [(1.5, 3), (8, 10)],'down': [(6, 8), (10, 14)]},
+                'tyroneP': {'up': [(1.5, 3), (8, 10)], 'down': [(6, 8), (10, 13)]},
+                'tyroneR': {'up': [(1.5, 3), (8, 10)], 'down': [(6, 8), (10, 14)]}
+            },
+    'polyala-gly': 
+            {
+                'menten': {'up': [(1.5, 3), (8, 10)],'down': [(5, 8), (11, 14)]},
+                'tyroneP': {'up': [(1.5, 3), (8, 10)], 'down': [(5, 8), (11, 14)]},
+                'tyroneR': {'up': [(1.5, 3), (8, 10)], 'down': [(5, 8), (11, 14)]}
+            },
+    'polyglycine':
+            {
+                'menten': {'up': [(1.5, 3), (5, 7)],'down': [(2, 6), (6.5, 9)]},
+                'tyroneP': {'up': [(1.5, 3), (8, 10)], 'down': [(4, 8), (10, 12)]},
+                'tyroneR': {'up': [(1.5, 3), (5, 6.5)], 'down': [(2.5, 5), (6, 8)]}
+            },
+    'polyasparagine': 
+            {
+                'menten': {'up': [(1.5, 4), (8, 12)],'down': [(6, 10), (10, 13)]}, #second peak is bit confusing
+                'tyroneP': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 13)]},
+                'tyroneR': {'up': [(1.5, 4), (8, 12)], 'down': [(6, 10), (10, 13)]}
+            },
+    'polythreonine': 
+            {
+                'menten': {'up': [(1.5, 3), (8, 12)],'down': [(4, 8), (12, 16)]},
+                'tyroneP': {'up': [(1.5, 3), (7, 12)], 'down': [(4, 8), (12, 16)]},
+                'tyroneR': {'up': [(1.5, 3), (6, 10)], 'down': [(4, 8), (10, 12)]}
+            },
+    'polyisoleucine': 
+            {   'menten': {'up': [(2, 6), (8, 10)],'down': [(6, 10), (10, 14)]},
+                'tyroneP': {'up': [(2, 6), (8, 12)], 'down': [(6, 10), (10, 14)]},
+                'tyroneR': {'up': [(2, 8), (10, 14)], 'down': [(8, 10), (12, 16)]}
+            },
+    'polyvaline': 
+        {
+            'menten': {'up': [(2, 6), (8, 12)],'down': [(6, 8), (12, 14)]},
+            'tyroneP': {'up': [(2, 6), (8, 12)], 'down': [(6, 8), (12, 14)]},
+            'tyroneR': {'up': [(2, 6), (8, 10)], 'down': [(6, 8), (8, 11)]}
+        }
+}
+has_slow={
+    'polyalanine_default':
+            {
+                'menten': {'up': [(0, 4), (7, 10)],'down': [(5, 8), (12, 14)]},
+                'tyroneP': {'up': [(0, 4), (7, 10)],'down': [(5, 8), (12, 14)]},
+                'tyroneR':  {'up': [(0, 4), (7, 10)],'down': [(5, 8), (10, 12)]}
+            },
+    'polyala-gly': 
+            {
+                'menten': {'up': [(0, 4), (8, 10)],'down': [(5, 7), (12, 14)]},  #pending
+                'tyroneP': {'up': [(0, 4), (8, 10)],'down': [(5, 8), (12, 14)]},
+                'tyroneR': {'up': [(0, 4), (8, 10)],'down': [(5, 8), (11, 14)]}
+            },
+    'polyglycine':
+            {
+                'menten': {'up': [(0, 4), (4, 6)],'down': [(3, 5), (6,9)]}, #pending
+                'tyroneP':{'up': [(0, 4), (4, 6)],'down': [(3, 5), (6, 9)]},
+                'tyroneR': {'up': [(0, 4), (4, 6)],'down': [(3, 5), (6, 9)]}
+            },
+    'polythreonine': 
+            {
+                'menten': {'up': [(0, 2), (8, 10)],'down': [(4, 6), (10, 11)]},
+                'tyroneP': {'up': [(0, 2), (7, 10)],'down': [(5, 7), (11, 13)]},
+                'tyroneR': {'up': [(0, 4), (6, 10)], 'down': [(4, 8), (10, 12)]}
+            },
+  
+    'polyasparagine': 
+            {
+                'menten': {'up': [(2, 4), (6, 8)],'down': [(4, 7), (8, 10)]}, #done
+                'tyroneP': {'up': [(2, 5), (6, 8)], 'down': [(4, 6), (7, 10)]},
+                'tyroneR': {'up': [(0, 4), (8, 12)], 'down': [(6, 9), (10, 12)]}
+            },
+    'polyisoleucine': 
+            {   'menten': {'up': [(2, 6), (8, 12)],'down': [(6, 10), (14, 15)]},
+                'tyroneP': {'up': [(2, 6), (8, 12)],'down': [(5, 8), (11, 13)]},
+                'tyroneR': {'up': [(2, 6), (8, 12)],'down': [(6, 10), (11, 13)]}# peak 1 and 2 are confusing
+            },
+    'polyvaline': 
+            {
+                'menten': {'up': [(2, 6), (8, 12)],'down': [(6, 10), (12, 12.5)]},
+                'tyroneP': {'up': [(2, 6), (8, 12)],'down': [(5, 8), (11, 13)]},
+                'tyroneR': {'up': [(2, 6), (8, 10)],'down': [(4, 8), (10, 12)]}
+            }
+}
+has_coordinate_range= has_fast if 'fast' in os.path.abspath(dirsim) else has_slow
 # up and downs dict labels have tuple of two values as list, \
 # where they represent the bin range from to where search the peak/descent
 # calc. for only first two peaks, (only 1 is considered later)\
 #  [Based on visual depictions]
 poltype = ''
-for i in has_coordinate_range['menten']:
+for i in has_coordinate_range:
     if i in dirsim:
         poltype = i
 reptype = "menten" if "menton" in os.path.abspath(dirsim) else "tyroneP"\
     if "tyroneP" in os.path.abspath(dirsim) else "tyroneR"
-
+print (reptype,poltype)
 
 if not mdcom.checkFiles([rawpdb]) or not mdcom.checkFiles([minimizedpdb]):
-    #both are without water versions
+    # both are without water versions
     # if 0:
     mdcom.removewaterfrompdb(
         waterpsf, waterpdb, os.path.join(processingdir, "raw_protein"))
@@ -158,6 +231,7 @@ if not mdcom.checkFiles([dimensionsFile]):
     df['dim_categories'] = df.index
     df.to_csv(dimensionsFile, index=False, sep='\t')
 
+timeoutput(inst1,time.time(),'timebeforeComputing')
 
 # main variables computation (1st instance)
 dispint = 0.1
@@ -170,24 +244,30 @@ forceC, force_ra20, forcedispav = mdpro.compute_averages(
 # anyhow, even in previous calculations, no such bias was added as emphasis was put on the
 # displacement wise averaged plot
 
+timeoutput(inst1,time.time(),'Force_calculation()')
+
+#sys.exit()
 keystemp = list(forcedispav.keys())
 keystemp.sort()
 newarrtemp = [[i, forcedispav[i]] for i in keystemp]
-print (newarrtemp)
-print (has_coordinate_range[reptype][poltype]['up'][1])
-print (has_coordinate_range[reptype][poltype]['down'][1])
+#print(newarrtemp)
+#print(has_coordinate_range[poltype][reptype]['up'][1])
+#print(has_coordinate_range[poltype][reptype]['down'][1])
 # each element is a sublist having displacement bins averaged variable (force) values.
 peak1 = mdcom.peakdistances(
-    newarrtemp, has_coordinate_range[reptype][poltype]['up'][0], "max")
+    newarrtemp, has_coordinate_range[poltype][reptype]['up'][0], "max")
 down1 = mdcom.peakdistances(
-    newarrtemp, has_coordinate_range[reptype][poltype]['down'][0], "min")
+    newarrtemp, has_coordinate_range[poltype][reptype]['down'][0], "min")
 peak2 = mdcom.peakdistances(
-    newarrtemp, has_coordinate_range[reptype][poltype]['up'][1], "max")
+    newarrtemp, has_coordinate_range[poltype][reptype]['up'][1], "max")
 down2 = mdcom.peakdistances(
-    newarrtemp, has_coordinate_range[reptype][poltype]['down'][1], "min")
+    newarrtemp, has_coordinate_range[poltype][reptype]['down'][1], "min")
+print (peak1,down1,peak2,down2)
 # above four values have 2 values packed, displacemnet and force
 
-if not mdcom.checkFiles([peakdistancesfile]):
+
+#if not mdcom.checkFiles([peakdistancesfile]):
+if 1:
     with open(peakdistancesfile, "w") as fin:
         fin.write("peaktype\tdistance\tforce\tpoltype\treptype\n")
         fin.write("peak1\t%s\t%s\n" % (peak1[0], peak1[1]))
@@ -199,7 +279,10 @@ peakhas = {peak1[0]: peak1[1], peak2[0]: peak2[1]}
 downhas = {down1[0]: down1[1], down2[0]: down2[1]}
 # so here we stored, displacement peak values as keys and force as their values
 
-if not (mdcom.checkFiles([toughnessFile])):
+timeoutput(inst1,time.time(),'peakwriting')
+
+#if not (mdcom.checkFiles([toughnessFile])):
+if 1:
     volume = mdcom.nanocrystal_volume(waterpsf, waterpdb)
     # print (volume,poltype)
     toughness_data_all, toughness_data_1stpeak, \
@@ -209,6 +292,8 @@ if not (mdcom.checkFiles([toughnessFile])):
         fout.write("Complete\t%s\n" % (toughness_data_all))
         fout.write("1stpeak\t%s\n" % (toughness_data_1stpeak))
         fout.write("2aadist\t%s\n" % (toughness_data_2aa))
+
+timeoutput(inst1,time.time(),'toughness_data')
 
 # refined
 # check first of data exists, if yes ,, call for processing, else for computing
@@ -231,30 +316,55 @@ hashbdf = {}
 extractout = {}
 
 # main variables computation (2nd instance)
+countHb = 1
+
+
+temp_peak1 = peak1[0]
+temp_down1 = down1[0]
+temp_peak2 = peak2[0]
+
+framesrange_first_ascent = [i for i in distC if distC[i] <= temp_peak1+0.1]
+framesrange_second_ascent = [i for i in distC if temp_down1-0.1 <= distC[i] <= temp_peak2+0.1]
+framesrange_slip1 =  [i for i in distC if temp_peak1-0.1 <= distC[i] <= temp_down1+0.1]
+if 1:
+    #writing basic frames information once
+    fileframerange = os.path.join(processingdir, 'frame_ranges.txt')
+    with open (fileframerange,'w') as fout:
+        fout.write("Till first peak, Totalframes:%s (%s to %s)"%(len(framesrange_first_ascent),min(framesrange_first_ascent),max(framesrange_first_ascent)))
+        fout.write("From 1st to onset of 2nd, Totalframes:%s (%s to %s)"%(len(framesrange_slip1),min(framesrange_slip1),max(framesrange_slip1)))
+        fout.write("from onset of 2nd to its peak, Totalframes:%s (%s to %s)"%(len(framesrange_second_ascent),min(framesrange_second_ascent),max(framesrange_second_ascent)))
+
+
 for hbtype in ['hbadj', 'hbnad', 'hball']:
+    inst1=time.time()
     dirtemp = os.path.join(processingdir, fullformhbs[hbtype])
     mdpro.makedir(dirtemp)
     if not len(os.listdir(dirtemp)) > 10:
         # arbitrary cuttoff_hbstable
-        print('inside')
         mdcom.hbonds_calculator3layer(
             psf=psf, dcd=dcdpull, outfile=dirtemp, mode=hbtype)
         # if directory files are not present
         # compute them else merge them into dataframe
-    print(poltype, reptype)
+    print("***",poltype, reptype)
     hbondData = mdpro.hbonds_calculator3layer(
-        dirtemp, hbtype, distC, peak1[0], down1[0], peak2[0], dispint=dispint, cuttofffrommain=cuttoff_hbstable)
-    # sys.exit()
+        dirtemp, hbtype, distC, peak1[0], down1[0], peak2[0], dispint, framesrange_first_ascent,framesrange_second_ascent, cuttofffrommain=cuttoff_hbstable
+)
     temphas = {i: hbondData[i] for i in hbondData if 'dispav' in i}
     hbondData = {i: hbondData[i] for i in hbondData if 'dispav' not in i}
     extractout.update(temphas)
     hashbdf[hbtype] = pd.DataFrame(hbondData)
+    timeoutput ( inst1, time.time(), 'Hbdata_computing %s'%hbtype)
+
+inst1=time.time()
+
 hblisdf = list(hashbdf.values())
 hbcompdf = hblisdf[0]
 for i in hblisdf[1:]:
     hbcompdf = pd.merge(hbcompdf, i, how='outer',
                         left_index=True, right_index=True)
 
+timeoutput ( inst1, time.time(), 'pdmerging hbtype')
+inst1=time.time()
 
 print(poltype, reptype)
 
@@ -272,6 +382,9 @@ dfmain = pd.DataFrame([forceC, force_ra20, distC],
 
 
 dfmain['frames-raw'] = dfmain.index
+dfmain.to_csv(outputfinalfileOnlyForce,
+              index=False, sep='\t')
+
 
 dfmain = pd.merge(dfmain, hbcompdf, on=['frames-raw'], how='outer')
 dfmain = pd.merge(dfmain, dfdispav, on=['displacement'], how='outer')
@@ -280,6 +393,8 @@ dfmain = dfmain.sort_values(['frames-raw'])
 
 dfmain.to_csv(outputfinalfile,
               index=False, sep='\t')
+timeoutput ( inst1, time.time(), 'writing file to dffinal')
+inst1=time.time()
 
 peak1has = {}
 peak2has = {}
@@ -307,3 +422,5 @@ dfhbp1 = pd.DataFrame(peak1has)
 dfhbp1['displacement'] = dfhbp1.index
 dfhbp1.to_csv(os.path.join(outdir, "hbonds_peaks1.tsv"),
               index=False, sep='\t')
+timeoutput ( inst1, time.time(), 'hbpeaks and dome')
+inst1=time.time()

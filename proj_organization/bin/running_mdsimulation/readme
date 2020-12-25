@@ -1,0 +1,23 @@
+Though running md simulation has different repository and link will be shared soon, but programs used to run that are present and listed in this directory with appropriate reference of the cronjob and automation
+
+md_job_withpull.py
+Running this will give you following message and prompt
+Please enter correct 0:args python ....py 1:directoryStructurte(this should have appropriate tree structure with dirs starting with poly) 2:pressure_equil_runs 3:smd_pulling(start from1 ns) and will bypass pressurerunsafter1ns (value 1:true 0:false
+This will create the directory structure for pressure runs and read the appropriate files and create the chain of simulations in loop
+address of currently running simulation will be written to the file
+/tmp/cronadd
+e.g. head /tmp/cronadd
+'''
+/home/storage/parastemp4tb/mentonset_isnowhulkset_forslowpulling/polyglycine
+'''
+
+a cronjob was set as following 
+*/10 * * * * /home/paras/.miniconda3/envs/mdsim/bin/python ~/bin/cronjobkiller.py >> /tmp/cronjoblogs.log
+
+miniconda environment is specific address of virt env having mdtraj and other necessary packages that cronjobkiller program will need.
+
+cronjobkiller.py
+this will look into address written in /tmp/cronadd,, [address will only be written if smd instance from previous program will be running else None]
+Once that will be read, appropriate files will be read to record, how much dummy atom has displaced from starting of simulation, if that exceeds its original length, it kills the simulation, and next poly instance starts running.
+
+

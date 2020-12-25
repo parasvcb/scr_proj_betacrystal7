@@ -1,0 +1,610 @@
+tyrone_set3 polyvaline
+filecreation 0.0
+Basics 0.0
+tyroneR polyvaline
+timebeforeComputing 0.0
+Force_calculation() 1.607
+[3.1, 1309.347] [5.6, 307.23] [8.7, 1018.965] [12.0, -21.708]
+peakwriting 1.608
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 3.812
+*** polyvaline tyroneR
+*all
+*p1
+frac3plus=0.15,frac4plus=0.11
+*p2
+Hbdata_computing hbadj 10.252
+*** polyvaline tyroneR
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 7.537
+*** polyvaline tyroneR
+*all
+*p1
+frac3plus=0.15,frac4plus=0.11
+*p2
+Hbdata_computing hball 9.91
+pdmerging hbtype 0.229
+polyvaline tyroneR
+writing file to dffinal 5.677
+hbpeaks and dome 0.002
+tyrone_set3 polythreonine
+filecreation 0.0
+Basics 0.0
+tyroneR polythreonine
+timebeforeComputing 0.0
+Force_calculation() 1.738
+[2.0, 1672.527] [6.0, -62.086] [8.7, 1231.514] [11.6, 23.447]
+peakwriting 1.739
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.134
+*** polythreonine tyroneR
+*all
+*p1
+frac3plus=0.13,frac4plus=0.11
+*p2
+Hbdata_computing hbadj 10.701
+*** polythreonine tyroneR
+*all
+*p1
+frac3plus=0.04,frac4plus=0.02
+*p2
+Hbdata_computing hbnad 8.311
+*** polythreonine tyroneR
+*all
+*p1
+frac3plus=0.11,frac4plus=0.09
+*p2
+Hbdata_computing hball 11.146
+pdmerging hbtype 0.243
+polythreonine tyroneR
+writing file to dffinal 6.108
+hbpeaks and dome 0.003
+tyrone_set3 polyala-gly
+filecreation 0.0
+Basics 0.0
+tyroneR polyala-gly
+timebeforeComputing 0.0
+Force_calculation() 2.286
+[2.5, 2589.321] [7.1, 98.637] [9.6, 1566.575] [12.9, 65.113]
+peakwriting 2.286
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.405
+*** polyala-gly tyroneR
+*all
+*p1
+frac3plus=0.33,frac4plus=0.24
+*p2
+Hbdata_computing hbadj 22.272
+*** polyala-gly tyroneR
+*all
+*p1
+frac3plus=0.04,frac4plus=0.01
+*p2
+Hbdata_computing hbnad 16.928
+*** polyala-gly tyroneR
+*all
+*p1
+frac3plus=0.14,frac4plus=0.09
+*p2
+Hbdata_computing hball 22.133
+pdmerging hbtype 0.309
+polyala-gly tyroneR
+writing file to dffinal 7.815
+hbpeaks and dome 0.002
+tyrone_set3 polyalanine_default
+filecreation 0.0
+Basics 0.0
+tyroneR polyalanine_default
+timebeforeComputing 0.0
+Force_calculation() 2.007
+[1.8, 2994.376] [6.7, 58.857] [9.0, 1995.131] [11.4, 864.726]
+peakwriting 2.008
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.284
+*** polyalanine_default tyroneR
+*all
+*p1
+frac3plus=0.41,frac4plus=0.41
+*p2
+Hbdata_computing hbadj 18.767
+*** polyalanine_default tyroneR
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 13.424
+*** polyalanine_default tyroneR
+*all
+*p1
+frac3plus=0.17,frac4plus=0.17
+*p2
+Hbdata_computing hball 19.795
+pdmerging hbtype 0.294
+polyalanine_default tyroneR
+writing file to dffinal 7.593
+hbpeaks and dome 0.003
+tyrone_set3 polyglycine
+filecreation 0.0
+Basics 0.0
+tyroneR polyglycine
+timebeforeComputing 0.0
+Force_calculation() 1.621
+[1.4, 1950.097] [3.7, 768.553] [5.2, 1571.304] [9.0, 344.247]
+peakwriting 1.621
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 3.894
+*** polyglycine tyroneR
+*all
+*p1
+frac3plus=0.34,frac4plus=0.31
+*p2
+Hbdata_computing hbadj 13.52
+*** polyglycine tyroneR
+*all
+*p1
+frac3plus=0.02,frac4plus=0
+*p2
+Hbdata_computing hbnad 12.663
+*** polyglycine tyroneR
+*all
+*p1
+frac3plus=0.1,frac4plus=0.08
+*p2
+Hbdata_computing hball 13.017
+pdmerging hbtype 0.225
+polyglycine tyroneR
+writing file to dffinal 5.84
+hbpeaks and dome 0.003
+tyrone_set3 polyasparagine
+filecreation 0.0
+Basics 0.0
+tyroneR polyasparagine
+timebeforeComputing 0.0
+Force_calculation() 2.52
+[2.0, 1445.129] [7.7, 329.17] [9.8, 877.753] [11.5, 524.879]
+peakwriting 2.52
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.739
+*** polyasparagine tyroneR
+*all
+*p1
+frac3plus=0.12,frac4plus=0.09
+*p2
+Hbdata_computing hbadj 17.517
+*** polyasparagine tyroneR
+*all
+*p1
+frac3plus=0.04,frac4plus=0.03
+*p2
+Hbdata_computing hbnad 11.441
+*** polyasparagine tyroneR
+*all
+*p1
+frac3plus=0.07,frac4plus=0.05
+*p2
+Hbdata_computing hball 14.382
+pdmerging hbtype 0.292
+polyasparagine tyroneR
+writing file to dffinal 7.649
+hbpeaks and dome 0.002
+tyrone_set3 polyisoleucine
+filecreation 0.0
+Basics 0.027
+tyroneR polyisoleucine
+timebeforeComputing 0.027
+Force_calculation() 2.855
+[5.1, 1431.228] [8.9, 368.704] [10.5, 715.846] [11.8, 413.272]
+peakwriting 2.855
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 5.248
+*** polyisoleucine tyroneR
+*all
+*p1
+frac3plus=0.09,frac4plus=0.08
+*p2
+Hbdata_computing hbadj 20.622
+*** polyisoleucine tyroneR
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 11.689
+*** polyisoleucine tyroneR
+*all
+*p1
+frac3plus=0.09,frac4plus=0.08
+*p2
+Hbdata_computing hball 19.81
+pdmerging hbtype 0.323
+polyisoleucine tyroneR
+writing file to dffinal 8.215
+hbpeaks and dome 0.003
+tyroneP_set polyvaline
+filecreation 0.002
+Basics 0.002
+tyroneP polyvaline
+timebeforeComputing 0.003
+Force_calculation() 2.583
+[4.1, 1195.564] [6.5, 241.189] [10.0, 799.098] [12.4, 114.128]
+peakwriting 2.584
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.849
+*** polyvaline tyroneP
+*all
+*p1
+frac3plus=0.1,frac4plus=0.09
+*p2
+Hbdata_computing hbadj 17.253
+*** polyvaline tyroneP
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 11.326
+*** polyvaline tyroneP
+*all
+*p1
+frac3plus=0.1,frac4plus=0.09
+*p2
+Hbdata_computing hball 15.447
+pdmerging hbtype 0.317
+polyvaline tyroneP
+writing file to dffinal 7.848
+hbpeaks and dome 0.003
+tyroneP_set polythreonine
+filecreation 0.0
+Basics 0.0
+tyroneP polythreonine
+timebeforeComputing 0.0
+Force_calculation() 1.993
+[1.3, 1263.69] [6.3, 125.275] [8.5, 916.411] [12.1, 32.376]
+peakwriting 1.993
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.222
+*** polythreonine tyroneP
+*all
+*p1
+frac3plus=0.16,frac4plus=0.1
+*p2
+Hbdata_computing hbadj 11.914
+*** polythreonine tyroneP
+*all
+*p1
+frac3plus=0.05,frac4plus=0.05
+*p2
+Hbdata_computing hbnad 9.054
+*** polythreonine tyroneP
+*all
+*p1
+frac3plus=0.12,frac4plus=0.08
+*p2
+Hbdata_computing hball 10.952
+pdmerging hbtype 0.252
+polythreonine tyroneP
+writing file to dffinal 6.541
+hbpeaks and dome 0.002
+tyroneP_set polyala-gly
+filecreation 0.0
+Basics 0.0
+tyroneP polyala-gly
+timebeforeComputing 0.0
+Force_calculation() 2.057
+[1.9, 2571.807] [6.3, 64.531] [9.0, 1868.548] [14.0, 32.776]
+peakwriting 2.058
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.273
+*** polyala-gly tyroneP
+*all
+*p1
+frac3plus=0.33,frac4plus=0.33
+*p2
+Hbdata_computing hbadj 12.711
+*** polyala-gly tyroneP
+*all
+*p1
+frac3plus=0.06,frac4plus=0.04
+*p2
+Hbdata_computing hbnad 10.792
+*** polyala-gly tyroneP
+*all
+*p1
+frac3plus=0.16,frac4plus=0.15
+*p2
+Hbdata_computing hball 13.315
+pdmerging hbtype 0.283
+polyala-gly tyroneP
+writing file to dffinal 7.254
+hbpeaks and dome 0.002
+tyroneP_set polyalanine_default
+filecreation 0.0
+Basics 0.0
+tyroneP polyalanine_default
+timebeforeComputing 0.0
+Force_calculation() 2.073
+[2.3, 2896.87] [7.0, 114.55] [9.1, 1680.56] [12.4, 49.337]
+peakwriting 2.073
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.355
+*** polyalanine_default tyroneP
+*all
+*p1
+frac3plus=0.26,frac4plus=0.23
+*p2
+Hbdata_computing hbadj 13.836
+*** polyalanine_default tyroneP
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 10.498
+*** polyalanine_default tyroneP
+*all
+*p1
+frac3plus=0.1,frac4plus=0.09
+*p2
+Hbdata_computing hball 14.609
+pdmerging hbtype 0.283
+polyalanine_default tyroneP
+writing file to dffinal 7.269
+hbpeaks and dome 0.003
+tyroneP_set polyglycine
+filecreation 0.0
+Basics 0.0
+tyroneP polyglycine
+timebeforeComputing 0.0
+Force_calculation() 1.273
+[1.9, 2082.121] [4.2, 975.236] [5.3, 1640.591] [7.4, 702.367]
+peakwriting 1.273
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 3.513
+*** polyglycine tyroneP
+*all
+*p1
+frac3plus=0.37,frac4plus=0.3
+*p2
+Hbdata_computing hbadj 7.158
+*** polyglycine tyroneP
+*all
+*p1
+frac3plus=0.05,frac4plus=0.01
+*p2
+Hbdata_computing hbnad 6.373
+*** polyglycine tyroneP
+*all
+*p1
+frac3plus=0.13,frac4plus=0.08
+*p2
+Hbdata_computing hball 8.402
+pdmerging hbtype 0.185
+polyglycine tyroneP
+writing file to dffinal 4.95
+hbpeaks and dome 0.002
+tyroneP_set polyasparagine
+filecreation 0.0
+Basics 0.0
+tyroneP polyasparagine
+timebeforeComputing 0.0
+Force_calculation() 2.42
+[3.3, 1399.064] [5.4, 507.546] [6.9, 1125.829] [9.3, 248.936]
+peakwriting 2.421
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.678
+*** polyasparagine tyroneP
+*all
+*p1
+frac3plus=0.07,frac4plus=0.06
+*p2
+Hbdata_computing hbadj 11.912
+*** polyasparagine tyroneP
+*all
+*p1
+frac3plus=0.05,frac4plus=0.04
+*p2
+Hbdata_computing hbnad 10.681
+*** polyasparagine tyroneP
+*all
+*p1
+frac3plus=0.03,frac4plus=0.02
+*p2
+Hbdata_computing hball 12.811
+pdmerging hbtype 0.296
+polyasparagine tyroneP
+writing file to dffinal 7.552
+hbpeaks and dome 0.003
+tyroneP_set polyisoleucine
+filecreation 0.0
+Basics 0.013
+tyroneP polyisoleucine
+timebeforeComputing 0.013
+Force_calculation() 2.426
+[3.5, 1367.101] [6.4, 49.0] [9.1, 724.831] [13.0, 6.85]
+peakwriting 2.426
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.737
+*** polyisoleucine tyroneP
+*all
+*p1
+frac3plus=0.1,frac4plus=0.09
+*p2
+Hbdata_computing hbadj 356.951
+*** polyisoleucine tyroneP
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 351.552
+*** polyisoleucine tyroneP
+*all
+*p1
+frac3plus=0.1,frac4plus=0.09
+*p2
+Hbdata_computing hball 360.581
+pdmerging hbtype 0.271
+polyisoleucine tyroneP
+writing file to dffinal 6.353
+hbpeaks and dome 0.002
+menton_set polyvaline
+filecreation 0.0
+Basics 0.001
+menten polyvaline
+timebeforeComputing 0.001
+Force_calculation() 2.135
+[4.3, 1416.547] [7.1, 204.128] [10.2, 874.957] [12.5, 49.682]
+peakwriting 2.135
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.522
+*** polyvaline menten
+*all
+*p1
+frac3plus=0.14,frac4plus=0.13
+*p2
+Hbdata_computing hbadj 341.346
+*** polyvaline menten
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 335.796
+*** polyvaline menten
+*all
+*p1
+frac3plus=0.14,frac4plus=0.13
+*p2
+Hbdata_computing hball 336.611
+pdmerging hbtype 0.248
+polyvaline menten
+writing file to dffinal 6.033
+hbpeaks and dome 0.003
+menton_set polythreonine
+filecreation 0.001
+Basics 0.001
+menten polythreonine
+timebeforeComputing 0.002
+Force_calculation() 1.973
+[1.5, 1331.804] [5.0, 136.786] [9.2, 474.99] [10.3, 188.054]
+peakwriting 1.973
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 4.523
+*** polythreonine menten
+*all
+*p1
+frac3plus=0.14,frac4plus=0.12
+*p2
+Hbdata_computing hbadj 297.772
+*** polythreonine menten
+*all
+*p1
+frac3plus=0.04,frac4plus=0.04
+*p2
+Hbdata_computing hbnad 297.419
+*** polythreonine menten
+*all
+*p1
+frac3plus=0.14,frac4plus=0.12
+*p2
+Hbdata_computing hball 298.687
+pdmerging hbtype 0.213
+polythreonine menten
+writing file to dffinal 5.483
+hbpeaks and dome 0.003
+menton_set polyala-gly
+menton_set polyalanine_default
+filecreation 0.0
+Basics 0.016
+menten polyalanine_default
+timebeforeComputing 0.016
+Force_calculation() 2.856
+[1.9, 2604.627] [6.7, 29.33] [9.1, 1848.694] [13.0, 67.76]
+peakwriting 2.857
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 5.198
+*** polyalanine_default menten
+*all
+*p1
+frac3plus=0.37,frac4plus=0.27
+*p2
+Hbdata_computing hbadj 456.77
+*** polyalanine_default menten
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 453.23
+*** polyalanine_default menten
+*all
+*p1
+frac3plus=0.15,frac4plus=0.11
+*p2
+Hbdata_computing hball 459.385
+pdmerging hbtype 0.313
+polyalanine_default menten
+writing file to dffinal 8.036
+hbpeaks and dome 0.002
+menton_set polyglycine
+menton_set polyasparagine
+filecreation 0.0
+Basics 0.001
+menten polyasparagine
+timebeforeComputing 0.001
+Force_calculation() 2.561
+[3.0, 1581.837] [5.8, 552.104] [6.6, 646.286] [8.5, 175.5]
+peakwriting 2.562
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 5.037
+*** polyasparagine menten
+*all
+*p1
+frac3plus=0.12,frac4plus=0.09
+*p2
+Hbdata_computing hbadj 397.28
+*** polyasparagine menten
+*all
+*p1
+frac3plus=0.03,frac4plus=0.03
+*p2
+Hbdata_computing hbnad 394.367
+*** polyasparagine menten
+*all
+*p1
+frac3plus=0.05,frac4plus=0.04
+*p2
+Hbdata_computing hball 35.317
+pdmerging hbtype 0.252
+polyasparagine menten
+writing file to dffinal 6.718
+hbpeaks and dome 0.003
+menton_set polyisoleucine
+filecreation 0.0
+Basics 0.001
+menten polyisoleucine
+timebeforeComputing 0.001
+Force_calculation() 2.93
+[5.1, 1635.573] [7.5, 539.032] [9.7, 1095.273] [15.0, 174.931]
+peakwriting 2.931
+/usr/local/lib/vmd/vmd_LINUXAMD64: /lib64/libGL.so.1: no version information available (required by /usr/local/lib/vmd/vmd_LINUXAMD64)
+toughness_data 5.143
+*** polyisoleucine menten
+*all
+*p1
+frac3plus=0.12,frac4plus=0.1
+*p2
+Hbdata_computing hbadj 18.19
+*** polyisoleucine menten
+*all
+*p1
+frac3plus=0,frac4plus=0
+*p2
+Hbdata_computing hbnad 12.219
+*** polyisoleucine menten
+*all
+*p1
+frac3plus=0.12,frac4plus=0.1
+*p2
+Hbdata_computing hball 16.893
+pdmerging hbtype 0.346
+polyisoleucine menten
+writing file to dffinal 8.485
+hbpeaks and dome 0.003

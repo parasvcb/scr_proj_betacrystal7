@@ -161,11 +161,11 @@ def getdiv(numerator, denominator, prec): return round(
 
 
 def uniqueHbondasFuncofdisplacement(distC, framewise, filename):
-    #framewise is the complete framewise data and hb presnegt in them with segregation, 
+    # framewise is the complete framewise data and hb presnegt in them with segregation,
     listrelevant = [[distC[frame], frame]
                     for frame in set(distC.keys()) & set(framewise.keys())]
     listrelevant.sort()
-    #here sorting with displacement
+    # here sorting with displacement
     allbin = set()
     # print(list(framewise.values())[1][1])
     totalhbonds = len(set([j[0] for i in framewise.values() for j in i]))
@@ -178,19 +178,21 @@ def uniqueHbondasFuncofdisplacement(distC, framewise, filename):
         82      -0.3136390716223447     0       0
         32      -0.3054804067371748     1       0.0154
         '''
-        fout.write('Frame\tdisplacement\tBondsinFrame\tuniqueBonds\tfracUniqueBonds\n')
+        fout.write(
+            'Frame\tdisplacement\tBondsinFrame\tuniqueBonds\tfracUniqueBonds\n')
         for value in listrelevant:
             frame = value[1]
             hbhas = {hb[0]: hb[1]
                      for hb in framewise[frame]}
-            #hb0 is identity and hb1 is its seg tag
+            # hb0 is identity and hb1 is its seg tag
             # for unique count i need to get
-            totalHb=len(set(hbhas.keys()))
+            totalHb = len(set(hbhas.keys()))
             uniqueHb = len(set(hbhas.keys())-allbin)
             allbin |= set(hbhas.keys())
             frac = getdiv(uniqueHb, totalhbonds, 4)
-            #fracUniqueBonds is new unique H bonds from total bonds in that range 
-            fout.write('%s\t%s\t%s\t%s\t%s\n' % (frame, round(value[0],3), totalHb, uniqueHb, frac))
+            # fracUniqueBonds is new unique H bonds from total bonds in that range
+            fout.write('%s\t%s\t%s\t%s\t%s\n' %
+                       (frame, round(value[0], 3), totalHb, uniqueHb, frac))
 
 
 def writehbhastocsv(has, filename):
@@ -200,7 +202,7 @@ def writehbhastocsv(has, filename):
     hascustom['Main_Main'] = {i: 0 for i in binshas}
     hascustom['Main_Side'] = {i: 0 for i in binshas}
     hascustom['Side_Side'] = {i: 0 for i in binshas}
-    #using only keys, not copying and assigning data, hence it wont undergo the changes by changing binshas
+    # using only keys, not copying and assigning data, hence it wont undergo the changes by changing binshas
     '''
     Above listed has will hold all the Hbtypes defined apriori, and write them to a file, 
     with their segregation listed in hascustom, (which will be nothing but frequency histgram session)
@@ -209,9 +211,8 @@ def writehbhastocsv(has, filename):
     Binshas on other hand will have the Hb_types falling in the range of occurences.
 
     So here those two hashes will be written in two files, ending with occurence.tsv and occurence_definedbins.tsv
-    First will have segregation tag, along with idenity listed and overall occurenece during the frame range
-    Second will have the segregation tag, and occurence frequency (within segregation tag and from total) 
-    along with count of Hb in that tag, 
+    First will have segregation tag, along with idenity listed and overall occurenece during the frame range per HB
+    Second will have the segregation tag, and occurence frequency bin range (within segregation tag and from total) along with count of Hb in that tag, 
     Third one is special and listed below
     '''
     with open(filename + '_occurence.tsv', 'w') as fout:
@@ -220,21 +221,29 @@ def writehbhastocsv(has, filename):
         Main_Main       N_OT2   0.57
         Main_Main       N_C     0.02
         Main_Main       N_OT2   0.0
+
+        #this has changed to 
+        hbtype  identity        occurence
+        Main_Main       SegBP1-GLY7-Main-C SegCP1-GLY2-Main-N   0.46
+        Main_Main       SegBP1-GLY7-Side-OT1 SegCP1-GLY2-Main-N 0.41
+        Main_Main       SegCP1-GLY2-Main-CA SegDP1-GLY6-Main-O  0.09
+        Main_Main       SegBP1-GLY5-Main-O SegCP1-GLY4-Main-N   0.48
         #atomsname will be changed to identity
         '''
         fout.write('hbtype\tidentity\toccurence\n')
 
         if has and len(has) > 0:
             for i in has:
-                #i will be of follwing format
-                #e.g. (('SegCP1-ASN2-Main-N','SegBP1-ASN7-Side-OT1'),(main,main),(atomname1,atomanme2))
+                # i will be of follwing format
+                # e.g. (('SegCP1-ASN2-Main-N','SegBP1-ASN7-Side-OT1'),(main,main),(atomname1,atomanme2))
                 identity = i[0]
                 value = has[i]
                 hbtype = "_".join(i[1])
-                fout.write('%s\t%s\t%s\n' % (hbtype, " ".join(identity), value))
+                fout.write('%s\t%s\t%s\n' %
+                           (hbtype, " ".join(identity), value))
                 for j in binshas:
                     if j[0] <= value < j[1]:
-                        binshas[j] += [(identity,hbtype)]
+                        binshas[j] += [(identity, hbtype)]
                         hascustom[hbtype][j] += 1
                         break
         else:
@@ -252,10 +261,16 @@ def writehbhastocsv(has, filename):
         0.1_0.2 Main_Main       2       0.04    0.03
         0.2_0.3 Main_Main       4       0.08    0.06
         0.3_0.4 Main_Main       2       0.04    0.03
+
+        hbtype  Bins    values  FrequencyClass  FrequencyTotal
+        Main_Main       0_0.1   17      0.57    0.57
+        Main_Main       0.1_0.2 1       0.03    0.03
+        Main_Main       0.2_0.3 1       0.03    0.03
+        Main_Main       0.3_0.4 2       0.07    0.07
         '''
         fout.write('Hbtype\tBins\tvalues\tFrequencyClass\tFrequencyTotal\n')
         totalSum = sum([sum(hascustom[i].values()) for i in hascustom])
-        #cumulative sum of all Hb types
+        # cumulative sum of all Hb types
         for hbtype in hascustom:
             classSum = sum(hascustom[hbtype].values())
             for bins in keys:
@@ -264,10 +279,10 @@ def writehbhastocsv(has, filename):
                     frac3plus += getdiv(binval, totalSum, 2)
                 if bins[1] > 0.4:
                     frac4plus += getdiv(binval, totalSum, 2)
-                fout.write("%s\t%s\t%s\t%s\t%s\n" % (hbtype,"_".join(map(str, bins)), binval, getdiv(
+                fout.write("%s\t%s\t%s\t%s\t%s\n" % (hbtype, "_".join(map(str, bins)), binval, getdiv(
                     binval, classSum, 2), getdiv(binval, totalSum, 2)))
 
-    print(os.path.basename(os.path.normpath(filename)))
+    # print(os.path.basename(os.path.normpath(filename)))
     print('frac3plus=%s,frac4plus=%s' %
           (round(frac3plus, 3), round(frac4plus, 3)))
 
@@ -281,6 +296,11 @@ def writehbhastocsv(has, filename):
         Occ_range       atomshbtype     hbtype  hb_identity
         0_0.1   N_C     Main_Main       SegBP1-ALA7-Main-C : SegCP1-ALA2-Main-N
         0_0.1   N_OT2   Main_Main       SegBP1-ALA7-Side-OT2 : SegCP1-ALA2-Main-N
+
+        #changed to 
+        Occ_range       HB_identity     hbtype
+        0_0.1   SegCP1-GLY2-Main-CA : SegDP1-GLY6-Main-O        M_a_i_n___M_a_i_n
+        0_0.1   SegCP1-GLY7-Main-C : SegDP1-GLY2-Main-N M_a_i_n___M_a_i_n
         '''
         fout.write('Hbtype\ttotalBonds\n')
         for hbtype in hascustom:
@@ -294,13 +314,15 @@ def writehbhastocsv(has, filename):
             sorteditems = sorted(sorteditems, key=lambda x: x[1])
             # print(sorteditems)
             for j in sorteditems:
-                hbtype = "_".join(j[1])
+                hbtype = "".join(j[1])
+                # changed '-' to ''
                 fout.write('%s\t%s\t%s\n' %
-                           ("_".join(map(str, i)),  " : ".join(j[0]) , hbtype))
+                           ("_".join(map(str, i)),  " : ".join(j[0]), hbtype))
             fout.write('\n')
 
 
 def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False, plot=True, mind=-1, maxd=22):
+    #print (directory, len(dis), dispint, cuttoff, len(framerange) if framerange else False, plot, mind, maxd)
     '''
     Lets see how i have deisgned this function (sub function)
 
@@ -327,15 +349,15 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
         raw_mcmc_count_perframe = {}
         raw_mcsc_count_perframe = {}
         raw_scsc_count_perframe = {}
-        
+
         # print(filerange)
         for fil in filerange:
             frame = int(fil.split('.')[0])
             framewise[frame] = []
-            #if frame <= 8000: # this is obsolete and should be ignored or removed, but only after final testing
+            # if frame <= 8000: # this is obsolete and should be ignored or removed, but only after final testing
             if 1:
-                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main'): 0, ('Side', 'Side'): 0}
-                #framespecific
+                hbtemp = {('Main', 'Side'): 0, ('Main', 'Main')                          : 0, ('Side', 'Side'): 0}
+                # framespecific
                 with open(os.path.join(directory, fil)) as fin:
                     for line in [i for i in fin.read().split('\n')[2:] if len(i) > 0]:
                         acc, don, occ = line.split()
@@ -359,13 +381,13 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
                         identity = tuple(identity)
                         hbhasKeyAndFramewiseValue = (
                             identity, typebond)
-                        #e.g. (('SegCP1-ASN2-Main-N','SegBP1-ASN7-Side-OT1'),(main,main))
-                        #i think above logic should have only ifrst element, 
+                        # e.g. (('SegCP1-ASN2-Main-N','SegBP1-ASN7-Side-OT1'),(main,main))
+                        # i think above logic should have only ifrst element,
                         if hbhasKeyAndFramewiseValue not in hbhas:
                             hbhas[hbhasKeyAndFramewiseValue] = []
-                            #hbhas keeps HB has main key and frames over which it was found as value.
+                            # hbhas keeps HB has main key and frames over which it was found as value.
                         hbhas[hbhasKeyAndFramewiseValue] += [frame]
-                        #why cant a set of this, 
+                        # why cant a set of this,
                         framewise[frame] += [hbhasKeyAndFramewiseValue]
 
                         hbtemp[typebond] += 1
@@ -385,7 +407,7 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
         '''
         This () will take framewise hash, having hblist with identity and tag as tuple tagged in list, for every frame
         and thereafter takes in consideration the framerange and count the seg tags for the frames, while cross referring  to the hbhascoccurence
-        
+
         '''
         mcmcstoch_raw = {}
         mcmcstab_raw = {}
@@ -400,7 +422,7 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
         # hbhasoccurence key has (identity, typebond, tuple(key_hbatom)) as key
         # and frameiwse will have them as value elemnet
         for frame in framerange:
-            #means only iterarting the frames over which maxixmal 1st or 2nd force persisted.
+            # means only iterarting the frames over which maxixmal 1st or 2nd force persisted.
             templishb = list(framewise[frame])
             # they will cross refer to hbhasoccirce keys
             # where 0th element is identity tuple and 1st element in tuple of hbtype
@@ -418,7 +440,7 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
             # print([hbhasoccurence[i] for i in mcmc if i in hbhasoccurence])
             mcmcstoch_raw[frame] = len([i for i in mcmc if (
                 i not in hbhasoccurence or (i in hbhasoccurence and hbhasoccurence[i] < cuttoff))])
-            #underwhat circumstance does a hb wont be present in parent datasource of hbhasoccurnce, seems 
+            # underwhat circumstance does a hb wont be present in parent datasource of hbhasoccurnce, seems
             # print(mcmcstoch_raw[frame])
             scscstoch_raw[frame] = len([i for i in scsc if (
                 i not in hbhasoccurence or (i in hbhasoccurence and hbhasoccurence[i] < cuttoff))])
@@ -445,39 +467,40 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
     # removed chunk of caluculations to sub () called firstsetocalculations
     hbhas, framewise, raw_mcmc, raw_mcsc, raw_scsc = firstsetocalculations(
         filerange, directory)
-
+    # print ('firstsetocalculations() done')
     # the above for the p1 and p2 data is limited to the framelist defined
 
     if framerange:
         # get in form of stochastic and stable values
         hbhasoccurence = {hbond: round(len(set(hbhas[hbond]) & set(
             framerange)) / len(framerange), 2) for hbond in hbhas}
-        #hbond as key in above is just a tuple of identity of h bond and its seg tag
-        #this will fetch the occurenece frequency of all hb types in given framerange
+        # hbond as key in above is just a tuple of identity of h bond and its seg tag
+        # this will fetch the occurenece frequency of all hb types in given framerange
         # thats good of call, (above),
-
+        # print ('in framerange()',plot)
         if plot:
             filetocsvname = os.path.join(os.path.dirname(
                 os.path.normpath(directory)), os.path.basename(os.path.normpath(directory)))
-            #directory here refers to processed/hb.. where individual framewise data has been stored, 
-            #normmpath will get parent address till processed dir and basename will give the name of last dir 
-            #say hbonds_adjacent, we will get append like processed/hbadjacent.. but not inside folder,
-            #as further appendings has to be added there.
+            # directory here refers to processed/hb.. where individual framewise data has been stored,
+            # normmpath will get parent address till processed dir and basename will give the name of last dir
+            # say hbonds_adjacent, we will get append like processed/hbadjacent.. but not inside folder,
+            # as further appendings has to be added there.
             # print(hbhasoccurence)
             writehbhastocsv(hbhasoccurence, filetocsvname)
-            #description in function header
+            # description in function header
             uniqueHbondasFuncofdisplacement(dis, framewise, filetocsvname)
             # framewise will have the data fro every frame and list of tuples (Hb identity of them, and thier segregation tag)
             # uniqueHbondasFuncofdisplacement() takes the range of frames till certain range , say peak1, and thereafter for each such frame
             # tells you about the how mnay new and unique H bonds were presnet in that frame, their count as well as fraction
 
-        #herein stoch stable hunter has been given a task to delineate the differences and hence peculiar framerange has on;y been subjected to them 
+        # herein stoch stable hunter has been given a task to delineate the differences and hence peculiar framerange has on;y been subjected to them
         mcmcstoch_raw, mcmcstab_raw, scscstoch_raw,\
             scscstab_raw, mcscstoch_raw, mcscstab_raw = stoch_stable_hunter(
                 hbhasoccurence, framewise, framerange, cuttoff)
-        
+        #print ('raw computed')
         mcmcstoch_raw, mcmcstoch_ra20, mcmcstochdispav = compute_averages(
             mcmcstoch_raw, dis, dispint)
+
         # print (mcmcstoch_ra20)
         # print (mcmcstochdispav)
         # sys.exit()
@@ -522,7 +545,7 @@ def sub_hbondaverages_new(directory, dis, dispint, cuttoff=0.3, framerange=False
         return raw_mcmc, raw_mcmc_ra20, raw_mcmcdispav, raw_mcsc, raw_mcsc_ra20, raw_mcscdispav, raw_scsc, raw_scsc_ra20, raw_scscdispav
 
 
-def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cuttofffrommain):
+def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, framesrange_first_ascent, framesrange_second_ascent, cuttofffrommain):
     # documentation of function will involve the following
     # the task it is intented to do,
     # its sub tasks and sub function callings,
@@ -550,29 +573,28 @@ def hbonds_calculator3layer(dirsim, appendhbtype, dis, p1, d1, p2, dispint, cutt
     # send framerange to find stoch and stab as different range and extrapolate stable information to the peak
 
     # above two folders will have the data for H bond types amd per frame files
+    print('*all')
     mcmc, mcmcra20, mcmcdispav, mcsc, mcscra20, mcscdispav, scsc, scscra20, scscdispav = sub_hbondaverages_new(
         dirsim, dis, dispint, framerange=False)
 
-    framesrange_first_ascent = [i for i in dis if dis[i] <= p1+0.1]
-    framesrange_second_ascent = [i for i in dis if d1-0.1 <= dis[i] <= p2+0.1]
-    
-    print("framerange, max:%s, min %s"%(max(framesrange_first_ascent), min(framesrange_first_ascent)))
     # sys.exit()
+    print('*p1')
     p1mcmcstoch_raw, p1mcmcstoch_ra20, p1mcmcstochdispav, \
         p1mcmcstab_raw, p1mcmcstab_ra20, p1mcmcstabdispav, \
         p1scscstoch_raw, p1scscstoch_ra20, p1scscstochdispav, \
         p1scscstab_raw, p1scscstab_ra20, p1scscstabdispav, \
         p1mcscstoch_raw, p1mcscstoch_ra20, p1mcscstochdispav, \
         p1mcscstab_raw, p1mcscstab_ra20, p1mcscstabdispav = sub_hbondaverages_new(dirsim, dis, dispint, cuttofffrommain,
-                                                                              framerange=framesrange_first_ascent, maxd=p1)
+                                                                                  framerange=framesrange_first_ascent, maxd=p1)
     # sys.exit()
+    print('*p2')
     p2mcmcstoch_raw, p2mcmcstoch_ra20, p2mcmcstochdispav, \
         p2mcmcstab_raw, p2mcmcstab_ra20, p2mcmcstabdispav, \
         p2scscstoch_raw, p2scscstoch_ra20, p2scscstochdispav, \
         p2scscstab_raw, p2scscstab_ra20, p2scscstabdispav, \
         p2mcscstoch_raw, p2mcscstoch_ra20, p2mcscstochdispav, \
         p2mcscstab_raw, p2mcscstab_ra20, p2mcscstabdispav = sub_hbondaverages_new(dirsim, dis, dispint, cuttofffrommain,
-                                                                              framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
+                                                                                  framerange=framesrange_second_ascent, plot=False, mind=d1, maxd=p2)
 
     has = {appendhbtype + 'mcmc-raw': mcmc, appendhbtype + 'mcsc-raw': mcsc, appendhbtype + 'scsc-raw': scsc,
            appendhbtype + 'mcmc-ra20': mcmcra20, appendhbtype + 'mcsc-ra20': mcscra20, appendhbtype + 'scsc-ra20': scscra20,

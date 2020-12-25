@@ -1,0 +1,46 @@
+#Both VMD and chimera can be used for creating 7 stranded system, however i used chimera in the following steps
+The merge selection from VMD, after translting coordinates was giving a error while mutating gly to ala
+The glycing residues were modelled in a way that chimera was giving the error, unable to find backbone of some glycine atoms
+
+working gly is
+ATOM     45  N   GLY A   7      14.385   6.515   8.138  1.00  0.00           N
+ATOM     46  CA  GLY A   7      14.150   7.255   9.365  1.00  0.00           C
+ATOM     47  C   GLY A   7      14.520   6.416  10.591  1.00  0.00           C
+ATOM     48  O   GLY A   7      14.426   5.190  10.560  1.00  0.00           O
+ATOM     49  H   GLY A   7      14.345   5.520   8.230  1.00  0.00           H
+ATOM     50  1HA GLY A   7      14.736   8.173   9.359  1.00  0.00           H
+ATOM     51  2HA GLY A   7      13.101   7.546   9.424  1.00  0.00           H
+
+notworking gly with error is
+ATOM    440  N   GLY H   7      -4.669  10.335  -7.472  1.00  0.00      H    N
+ATOM    441  HN  GLY H   7      -4.494  11.317  -7.468  1.00  0.00      H    H
+ATOM    442  CA  GLY H   7      -5.109   9.825  -8.756  1.00  0.00      H    C
+ATOM    443  HA1 GLY H   7      -4.568   8.924  -9.002  1.00  0.00      H    H
+ATOM    444  HA2 GLY H   7      -6.182   9.712  -8.738  1.00  0.00      H    H
+ATOM    445  C   GLY H   7      -4.769  10.890  -9.796  1.00  0.00      H    C
+ATOM    446  OT1 GLY H   7      -5.233  12.047  -9.627  1.00  0.00      H    O
+ATOM    447  OT2 GLY H   7      -4.020  10.603 -10.764  1.00  0.00      H    O
+
+Somehow, VMD 1.9.3 was unable to keep sidechain atoms (specifically Hydrogen from PSF) during merge command (merging two or more structures from different instances) 
+why this really was the case is unknown to me
+
+So, I took the zoriented pdb structure of 2SLK without ACE and other nonstandard residues at the termini.
+1. Take zori_prot.pdb
+2. select first left hand side of second three last strands, withre BGL or NDI starnds, turn on 'Movement Mouse mode' from structure editing under tools.
+ switch to Move selection module instead of default Normal and thereafter, press the wheel and turn move the strands to outermost side by approproate guess,
+3. repeat on other side, and save the new cooridnates only, that are translated.
+4. open zori_prot and newly translated strands (extra2ladjacent_ayers_random_mousemovemnt_chimera.pdb) together
+5. Combine both the models together using 'combine #0,1'
+6. Save the coordinates of newly given model#02 (7strands_chimera_without_hydorgenbond.pdb)
+7. Align structure to Z direction using la orient script (7strands_chimera_without_hydorgenbond_zoriented.pdb)
+8. Translate the strands in the vmd 
+first select the strands (3, one from each layer, outermost) #by default end strands will be BGL or NDI copies/
+set sel [atomselect top "all and chain 'P' or 'Q' or 'S'"] #or and, forgot
+$sel moveby {0 0 +-0.1}
+till h bonds are maximized
+#VMD translation was only used to maximize the H bonds (rest structre was prepared in chimera)
+9. save new cooridnates and then save them  (7starnd_vmd_hydrogen.pdb)
+10. Minimize the structure using 10000 default steps (chimera), (7strands_chimera_without_hydorgenbond.pdb)
+All this is compiled in vmd chimera, 7StrandLogicDefaultFiles.zip
+11. now swap the aa together (swapaa ala ::gly) #for all chains
+12. new minimized file is 2slkMod7strand.pdb

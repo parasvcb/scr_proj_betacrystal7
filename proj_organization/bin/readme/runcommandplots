@@ -1,0 +1,215 @@
+
+Data needs to be transferred from hulk to tyroneR and then for polyisoleucine sets to there
+rsync -a -f"+ */" -f"- *" hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
+rsync -av --exclude=*/dcd_outputs/* --exclude=*/before_mini/* --exclude=*/configurations/* --exclude=*/logs/* --exclude=*/arch*  hulk:/media/CSB/paras/projects/silk_7strand/complete7strand3sheets_pulling_middle/ ./
+
+
+(still running)
+
+after that update the rep over there and include both the plotting as well as the coding folders
+
+
+Doing teh analysis of vislaulization
+
+have a look at the simulation
+two taska at hand,,,
+have a look at the total backbone h bonds and H bonds between the SC SC, once done with them, do create the 14 and 10 membered rings, of the adjcanet strands, 
+make the Cb in VDW
+
+lets do it..
+
+rsync -av --include="*/" --include="wowaterpulling.dcd" --exclude="*" tyroneR:/home/paras/project/betasheetnanocrystal/ ./
+
+#for no clash files
+rsync -mav --include="*/" --include="no_clash*.psf" --exclude="*" --exclude="extra_poly/*" velocity_fast/ velocity_buehler
+
+programming fasters
+import os, subprocess,re
+deleted=['polyala_constrained','polygly_constrained','polyisoleucine_server191','polyisoleucine_78','polyisoleucine_turing']
+parent = "../../velocity_buehler/"
+output=''
+for i in os.listdir(parent):
+	if i in ["menton_set", "tyroneP_set", "tyrone_set3"]:
+		for j in os.listdir(os.path.join(parent,i)):
+			if re.match(r'poly[a-z]+',j):# and j not in deleted:
+				print (i,j)
+				if i=='menton_set' and j in ['polyglycine','polyala-gly']:
+					pass
+				else:
+					subprocess.check_output(['python','proj_organization/bin/data_generation/call3layer.py',os.path.join(parent,i,j),os.path.join(parent,i,j),'0'])
+
+subprocess.check_call(['python','cumulative_df.py',parent,os.path.join(parent,'data_tsv','out')])
+subprocess.check_call(['Rscript','barplot_hbatpeaks.R'])
+subprocess.check_call(['Rscript','vsdisp_hbondcount.R', os.path.join(parent,'menton_set'),os.path.join(parent,'plots','new4sep')])
+
+
+#above will compute the dfs
+
+python cumulative_df.py ../ ../out
+ 
+Rscript barplot.r ../out_hbondsall_peak_1.tsv ../plots/barplotHB_All_p1.jpeg
+Rscript barplot.r ../out_hbondsall_peak_2.tsv ../plots/barplotHB_All_p2.jpeg
+Rscript barplot.r ../out_hbondsadjacent_peak_2.tsv ../plots/barplotHB_Ad_p2.jpeg
+Rscript barplot.r ../out_hbondsadjacent_peak_1.tsv ../plots/barplotHB_Ad_p1.jpeg
+Rscript barplot.r ../out_forcecum.tsv ../plots/barplotforcepeak.jpeg
+Rscript barplot.r ../out_toughnesscum.tsv ../plots/barplotToughness.jpeg
+
+#follwing will create fresh plots
+point plots arent updated so far,, will add to them
+
+rm ../plots/comparison/*/*.csv
+rm ../plots/comparison/*/*.jpeg
+
+Rscript plottingHelppoint.R ../menton_set/ ../plots/comparison/menton_set/ & 
+Rscript plottingHelppoint.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
+Rscript plottingHelppoint.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
+
+Rscript plottingHelpLine.R ../menton_set/ ../plots/comparison/menton_set/ &
+Rscript plottingHelpLine.R ../tyrone_set3/ ../plots/comparison/tyrone_set3/ & 
+Rscript plottingHelpLine.R ../tyroneP_set/ ../plots/comparison/tyroneP_set/
+
+
+
+python call3layer.py ../menton_set/polyglycine/ ../menton_set/polyglycine/
+python call3layer.py ../tyroneP_set/polyglycine/ ../tyroneP_set/polyglycine/
+python call3layer.py ../tyrone_set3/polyglycine/ ../tyrone_set3/polyglycine/
+
+python call3layer.py ../menton_set/polyala-gly/ ../menton_set/polyala-gly/
+python call3layer.py ../tyroneP_set/polyala-gly/ ../tyroneP_set/polyala-gly/
+python call3layer.py ../tyrone_set3/polyala-gly/ ../tyrone_set3/polyala-gly/
+
+python cumulative_df.py ../ ../data_tsv/out
+Rscript barplot_hbatpeaks.R
+
+
+
+python cumulative_df.py ../ ../data_tsv/out
+#Rscript plothb_hbplot.R 
+Rscript barplot_hbatpeaks.R
+Rscript vsdisp_hbondcount.R ../menton_set/ ../plots/new4sep/
+Rscript vsdisp_force.R ../menton_set/ ../plots/new4sep/
+
+
+
+
+Tweaks and editing main dataset
+
+dffile1="../tyrone_set3/polyglycine/processed/dataframe_vnew2.tsv"
+dffile2="../tyrone_set3/polyalanine_default/processed/dataframe_vnew2.tsv"
+dffile3="../tyrone_set3/polyala-gly/processed/dataframe_vnew2.tsv"
+
+dataforce1=read.csv(dffile1,sep = "\t",check.names = FALSE)
+colnames(dataforce1)[which(names(dataforce1) == "for-ra20")] <- "forcera20"
+colnames(dataforce1)[which(names(dataforce1) == "for-dispav")] <- "forcedispav"
+dataforce1 <- subset(dataforce1, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce1,"polyglycine_data_r3.tsv",sep = "\t")
+
+dataforce2=read.csv(dffile2,sep = "\t",check.names = FALSE)
+colnames(dataforce2)[which(names(dataforce2) == "for-ra20")] <- "forcera20"
+colnames(dataforce2)[which(names(dataforce2) == "for-dispav")] <- "forcedispav"
+dataforce2 <- subset(dataforce2, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce2,"polyala_data_r3.tsv",sep = "\t")
+
+dataforce3=read.csv(dffile3,sep = "\t",check.names = FALSE)
+colnames(dataforce3)[which(names(dataforce3) == "for-ra20")] <- "forcera20"
+colnames(dataforce3)[which(names(dataforce3) == "for-dispav")] <- "forcedispav"
+dataforce3 <- subset(dataforce3, select = c('displacement','forcedispav','forcera20'))
+write.csv(dataforce3,"polyalagly_data_r3.tsv",sep = "\t")
+
+
+
+cp ../menton_set/polyalanine_default/logs/force.log alanine/f1.log
+cp ../tyroneP_set/polyalanine_default/logs/force.log alanine/f2.log
+cp ../tyrone_set3/polyalanine_default/logs/force.log alanine/f3.log
+
+cp ../menton_set/polyalanine_default/configurations/force.conf alanine/c1.conf
+cp ../tyroneP_set/polyalanine_default/configurations/force.conf alanine/c2.conf
+cp ../tyrone_set3/polyalanine_default/configurations/force.conf alanine/c3.conf
+
+cp ../menton_set/polyglycine/logs/force.log glycine/f1.log
+cp ../tyroneP_set/polyglycine/logs/force.log glycine/f2.log
+cp ../tyrone_set3/polyglycine/logs/force.log glycine/f3.log
+
+cp ../menton_set/polyglycine/configurations/force.conf glycine/c1.conf
+cp ../tyroneP_set/polyglycine/configurations/force.conf glycine/c2.conf
+cp ../tyrone_set3/polyglycine/configurations/force.conf glycine/c3.conf
+
+cp ../menton_set/polyala-gly/logs/force.log alagly/f1.log
+cp ../tyroneP_set/polyala-gly/logs/force.log alagly/f2.log
+cp ../tyrone_set3/polyala-gly/logs/force.log alagly/f3.log
+
+cp ../menton_set/polyala-gly/configurations/force.conf alagly/c1.conf
+cp ../tyroneP_set/polyala-gly/configurations/force.conf alagly/c2.conf
+cp ../tyrone_set3/polyala-gly/configurations/force.conf alagly/c3.conf
+
+
+
+
+
+
+cp ../menton_set/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling1.dcd
+cp ../tyroneP_set/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling2.dcd
+cp ../tyrone_set3/polyalanine_default/processed/wowaterpulling.dcd alanine/pulling3.dcd
+
+cp ../menton_set/polyalanine_default/processed/wowater.psf alanine/pulling.psf
+cp ../tyroneP_set/polyalanine_default/processed/minimized_protein.pdb alanine/pulling.pdb
+
+cp ../menton_set/polyglycine/processed/wowaterpulling.dcd glycine/pulling1.dcd
+cp ../tyroneP_set/polyglycine/processed/wowaterpulling.dcd glycine/pulling2.dcd
+cp ../tyrone_set3/polyglycine/processed/wowaterpulling.dcd glycine/pulling3.dcd
+
+cp ../menton_set/polyglycine/processed/wowater.psf glycine/pulling.psf
+cp ../tyroneP_set/polyglycine/processed/minimized_protein.pdb glycine/pulling.pdb
+
+cp ../menton_set/polyala-gly/processed/wowaterpulling.dcd alagly/pulling1.dcd
+cp ../tyroneP_set/polyala-gly/processed/wowaterpulling.dcd alagly/pulling2.dcd
+cp ../tyrone_set3/polyala-gly/processed/wowaterpulling.dcd alagly/pulling3.dcd
+
+cp ../menton_set/polyala-gly/processed/wowater.psf alagly/pulling.psf
+cp ../tyroneP_set/polyala-gly/processed/minimized_protein.pdb alagly/pulling.pdb
+
+rsync -av ../test/ biswajit@172.16.97.189:~/project/dcdpdblogconf/
+
+
+
+cp menton_set/polyalanine_default/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyalanine_default/before_mini/
+cp menton_set/polyala-gly/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyala-gly/before_mini/
+cp menton_set/polyglycine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyglycine/before_mini/
+cp menton_set/polyisoleucine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyisoleucine/before_mini/
+cp menton_set/polyvaline/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyvaline/before_mini/
+cp menton_set/polyasparagine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polyasparagine/before_mini/
+cp menton_set/polythreonine/before_mini/no_clash_z_autopsf.psf tyrone_set3/polythreonine/before_mini/
+
+cp menton_set/polyalanine_default/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyalanine_default/before_mini/
+cp menton_set/polyala-gly/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyala-gly/before_mini/
+cp menton_set/polyglycine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyglycine/before_mini/
+cp menton_set/polyisoleucine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyisoleucine/before_mini/
+cp menton_set/polyvaline/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyvaline/before_mini/
+cp menton_set/polyasparagine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polyasparagine/before_mini/
+cp menton_set/polythreonine/before_mini/no_clash_z_autopsf.psf tyroneP_set/polythreonine/before_mini/
+
+
+####velocity_buehler
+rsync -av ../tyroneP_set/polyala-gly/processed/ polyala-gly/processed/
+rsync -av ../tyroneP_set/polyglycine/processed/ polyglycine/processed/
+
+Rscript proj_organization/bin/plotting/vsdisp_force_fig3.R ../../velocity_buehler/menton_set/ proj_organization/plots/plots_slow/
+#make a cropped db version having only force peaks
+
+
+python proj_organization/bin/data_generation/call3layer.py ../../velocity_buehler/tyroneP_set/polyasparagine ../../velocity_buehler/tyroneP_set/polyasparagine 0
+
+
+pwd:
+/home/storage/pool/betasheetnanocrystal/data_organization/scr_proj_betacrystal7/proj_organization
+
+for velocity_buehler
+python bin/data_analysis/hb_integrity_cooperativity_ring_wise.py ../../../velocity_buehler/ results/data_tsv_slow/hbdata/
+Rscript bin/plotting/framewise_hbbonds_point.R results/data_tsv_slow/hbdata/ plots/plots_slow/hbdata/
+
+for fast velocity
+python bin/data_analysis/hb_integrity_cooperativity_ring_wise.py ../../../velocity_fast/ results/data_tsv_fast/hbdata/
+Rscript bin/plotting/framewise_hbbonds_point.R results/data_tsv_fast/hbdata/ plots/plots_fast/hbdata/
+Rscript bin/plotting/framewise_hbbonds_heatmap_tiles.R results/data_tsv_fast/hbdata/ plots/plots_fast/hbdata/
+
+
